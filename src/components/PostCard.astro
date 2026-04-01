@@ -1,0 +1,46 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  date: string;
+  image?: string;
+  href: string;
+}
+
+const { title, description, date, image, href } = Astro.props;
+
+const formattedDate = new Date(date).toLocaleDateString('ru-RU', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<article>
+  <a href={href} class="group block bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all">
+    {
+      image && (
+        <div class="aspect-[16/9] bg-gray-50 overflow-hidden">
+          <img
+            src={image}
+            alt={title}
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      )
+    }
+    <div class="p-5">
+      <time datetime={date} class="text-xs text-gray-400 font-medium uppercase tracking-wide">
+        {formattedDate}
+      </time>
+      <h2 class="mt-2 text-base font-semibold text-gray-900 group-hover:text-gray-600 transition-colors line-clamp-2">
+        {title}
+      </h2>
+      <p class="mt-1.5 text-sm text-gray-500 line-clamp-3">
+        {description}
+      </p>
+    </div>
+  </a>
+</article>

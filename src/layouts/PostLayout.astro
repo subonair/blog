@@ -1,0 +1,51 @@
+---
+import Base from './Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  datePublished: string;
+  canonicalURL?: string;
+  slug?: string;
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  datePublished,
+  canonicalURL = Astro.url.toString(),
+  slug,
+} = Astro.props;
+
+const resolvedOgImage = ogImage ?? (slug ? `/api/og/${slug}.png` : '/favicon.svg');
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  datePublished,
+  author: { '@type': 'Person', name: 'Дмитрий Иноземцев' },
+  image: resolvedOgImage,
+  url: canonicalURL,
+};
+---
+
+<Base
+  title={title}
+  description={description}
+  ogImage={resolvedOgImage}
+  ogType="article"
+  canonicalURL={canonicalURL}
+  slug={slug}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+  <Header />
+  <main class="max-w-3xl mx-auto px-4 py-10">
+    <slot />
+  </main>
+  <Footer />
+</Base>

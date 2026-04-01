@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Base title="404 — Страница не найдена">
+  <Header />
+
+  <main class="max-w-3xl mx-auto px-4 py-20 text-center">
+    <p class="text-8xl font-bold text-gray-100 select-none" aria-hidden="true">404</p>
+    <h1 class="mt-4 text-2xl font-bold text-gray-900">Страница не найдена</h1>
+    <p class="mt-3 text-gray-500">Такой страницы нет — возможно, она переехала или её никогда не было.</p>
+    <a
+      href="/"
+      class="mt-8 inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-gray-700 transition-colors"
+    >
+      ← На главную
+    </a>
+  </main>
+
+  <Footer />
+</Base>

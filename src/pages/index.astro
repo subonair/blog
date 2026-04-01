@@ -1,0 +1,89 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import PostCard from '../components/PostCard.astro';
+
+const sections = [
+  { href: '/iai', label: 'ИИ', description: 'Эксперименты, инструменты, выводы про искусственный интеллект' },
+  { href: '/triatlon', label: 'Триатлон', description: 'Тренировки, гонки, снаряжение' },
+  { href: '/rabota', label: 'Работа', description: 'Продуктивность, карьера, управление проектами' },
+  { href: '/services', label: 'Услуги', description: 'Чем могу быть полезен' },
+];
+
+const recentPosts = (await getCollection('blog'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 5)
+  .map((post) => ({
+    title: post.data.title,
+    description: post.data.description,
+    date: post.data.date.toISOString().split('T')[0],
+    image: post.data.image,
+    href: `/${post.id.replace(/\.md$/, '')}`,
+  }));
+---
+
+<Base title="itrokit" description="Блог об ИИ, триатлоне и работе">
+  <Header />
+
+  <main>
+    <!-- Hero / About -->
+    <section class="max-w-3xl mx-auto px-4 pt-14 pb-12">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+        Привет, я itrokit
+      </h1>
+      <p class="mt-4 text-lg text-gray-600 leading-relaxed max-w-xl">
+        Пишу об ИИ, триатлоне и удалённой работе. Делюсь тем, что сам пробую и проверяю.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a
+          href="/about"
+          class="inline-flex items-center gap-1.5 border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors"
+        >
+          Обо мне →
+        </a>
+        <a
+          href="https://t.me/itrokit"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-gray-700 transition-colors"
+        >
+          Telegram @itrokit
+        </a>
+      </div>
+    </section>
+
+    <!-- Sections / Topics -->
+    <section class="border-t border-gray-100">
+      <div class="max-w-3xl mx-auto px-4 py-10">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">Разделы</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {
+            sections.map(({ href, label, description }) => (
+              <a
+                href={href}
+                class="group flex flex-col p-4 border border-gray-100 rounded-xl hover:border-gray-200 hover:bg-gray-50 transition-all"
+              >
+                <span class="font-semibold text-gray-900 text-sm group-hover:text-gray-700">{label}</span>
+                <span class="mt-1 text-xs text-gray-400 leading-snug hidden sm:block">{description}</span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent posts -->
+    <section class="border-t border-gray-100">
+      <div class="max-w-3xl mx-auto px-4 py-10">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">Последние посты</h2>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {recentPosts.map((post) => <PostCard {...post} />)}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Base>

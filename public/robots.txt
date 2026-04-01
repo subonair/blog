@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://itrokit.ru/sitemap-index.xml
