@@ -89,7 +89,7 @@ export const GET: APIRoute = async ({ props }) => {
                       color: '#9ca3af',
                       fontWeight: 400,
                     },
-                    children: 'itrokit.ru',
+                    children: 'dimino.me',
                   },
                 },
               ],
