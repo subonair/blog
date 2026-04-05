@@ -53,3 +53,37 @@ article.prose li {
   margin-bottom: 0.4rem;
   line-height: 1.7;
 }
+
+/* Изображения-иллюстрации в тексте постов */
+article.prose img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0.75rem;
+  margin: 2rem 0 0.5rem;
+}
+
+article.prose figure {
+  margin: 2.5rem 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.875rem;
+  overflow: hidden;
+}
+
+article.prose figure img {
+  margin: 0;
+  border-radius: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+article.prose figure figcaption {
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  text-align: center;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  line-height: 1.5;
+}
