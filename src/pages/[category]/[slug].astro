@@ -1,0 +1,50 @@
+---
+import { getCollection, render } from 'astro:content';
+import PostLayout from '../../layouts/PostLayout.astro';
+import TelegramCTA from '../../components/TelegramCTA.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => {
+    const [category, slug] = post.id.split('/');
+    return {
+      params: { category, slug },
+      props: { post },
+    };
+  });
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const slug = `${post.data.category}/${post.id.split('/').pop()}`;
+---
+
+<PostLayout
+  title={post.data.title}
+  description={post.data.description}
+  datePublished={post.data.date.toISOString()}
+  slug={slug}
+>
+  <img
+    src={`/api/og/${slug}.png`}
+    alt={post.data.title}
+    width="1200"
+    height="630"
+    class="w-full rounded-xl mb-8 shadow-lg"
+    loading="eager"
+  />
+  <div class="flex items-start justify-between gap-4 mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 leading-tight">{post.data.title}</h1>
+    <time
+      datetime={post.data.date.toISOString()}
+      class="text-sm text-gray-400 whitespace-nowrap shrink-0 pt-1"
+    >
+      {post.data.date.toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' })}
+    </time>
+  </div>
+  <article class="prose prose-gray max-w-none">
+    <Content />
+  </article>
+
+  <TelegramCTA />
+</PostLayout>
