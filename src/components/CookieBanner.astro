@@ -1,0 +1,229 @@
+---
+// Cookie consent banner with Yandex.Metrika conditional initialization
+const METRIKA_ID = 108376892;
+---
+
+<!-- Cookie Banner -->
+<div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Согласие на cookie" aria-live="polite">
+  <div class="cookie-banner__inner">
+    <p class="cookie-banner__text">
+      Мы используем файлы cookie для улучшения работы сайта. Нажимая «Принять», вы даёте согласие
+      на обработку персональных данных в соответствии с{' '}
+      <a href="/privacy" class="cookie-banner__link">Политикой конфиденциальности</a>.
+    </p>
+    <div class="cookie-banner__actions">
+      <button id="cookie-accept" class="cookie-banner__btn cookie-banner__btn--accept">Принять</button>
+      <button id="cookie-reject" class="cookie-banner__btn cookie-banner__btn--reject">Отклонить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reopen button (shown after decision) -->
+<button id="cookie-reopen" class="cookie-reopen" aria-label="Настройки cookie" title="Настройки cookie">
+  🛡️
+</button>
+
+<style>
+  .cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: rgba(15, 20, 40, 0.95);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 1rem 1.5rem;
+    display: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .cookie-banner.is-visible {
+    display: block;
+  }
+
+  .cookie-banner__inner {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .cookie-banner__text {
+    flex: 1;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .cookie-banner__link {
+    color: #7aa2f7;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .cookie-banner__link:hover {
+    color: #fff;
+  }
+
+  .cookie-banner__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .cookie-banner__btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+
+  .cookie-banner__btn:hover {
+    opacity: 0.85;
+  }
+
+  .cookie-banner__btn--accept {
+    background: #1D3E81;
+    color: #fff;
+  }
+
+  .cookie-banner__btn--reject {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .cookie-banner__btn--reject:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+    opacity: 1;
+  }
+
+  /* Reopen button */
+  .cookie-reopen {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 9998;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: rgba(15, 20, 40, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    font-size: 1rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    backdrop-filter: blur(4px);
+  }
+
+  .cookie-reopen.is-visible {
+    display: flex;
+  }
+
+  .cookie-reopen:hover {
+    background: rgba(29, 62, 129, 0.9);
+  }
+
+  @media (max-width: 600px) {
+    .cookie-banner__inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+    }
+
+    .cookie-banner__actions {
+      justify-content: stretch;
+    }
+
+    .cookie-banner__btn {
+      flex: 1;
+      text-align: center;
+    }
+  }
+</style>
+
+<script define:vars={{ METRIKA_ID }}>
+  const STORAGE_KEY = 'cookie-consent';
+
+  function initMetrika() {
+    if (window.__metrikaInitialized) return;
+    window.__metrikaInitialized = true;
+
+    (function(m, e, t, r, i, k, a) {
+      m[i] = m[i] || function() { (m[i].a = m[i].a || []).push(arguments); };
+      m[i].l = 1 * new Date();
+      for (var j = 0; j < document.scripts.length; j++) {
+        if (document.scripts[j].src === r) return;
+      }
+      k = e.createElement(t);
+      a = e.getElementsByTagName(t)[0];
+      k.async = 1;
+      k.src = r;
+      a.parentNode.insertBefore(k, a);
+    })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+
+    ym(METRIKA_ID, 'init', {
+      clickmap: true,
+      trackLinks: true,
+      accurateTrackBounce: true,
+      webvisor: true,
+    });
+  }
+
+  function hideBanner() {
+    document.getElementById('cookie-banner').classList.remove('is-visible');
+    document.getElementById('cookie-reopen').classList.add('is-visible');
+  }
+
+  function showBanner() {
+    document.getElementById('cookie-banner').classList.add('is-visible');
+    document.getElementById('cookie-reopen').classList.remove('is-visible');
+  }
+
+  function init() {
+    const consent = localStorage.getItem(STORAGE_KEY);
+
+    if (consent === 'accepted') {
+      initMetrika();
+      document.getElementById('cookie-reopen').classList.add('is-visible');
+      return;
+    }
+
+    if (consent === 'rejected') {
+      document.getElementById('cookie-reopen').classList.add('is-visible');
+      return;
+    }
+
+    // No decision yet — show banner
+    showBanner();
+  }
+
+  document.getElementById('cookie-accept').addEventListener('click', function() {
+    localStorage.setItem(STORAGE_KEY, 'accepted');
+    hideBanner();
+    initMetrika();
+  });
+
+  document.getElementById('cookie-reject').addEventListener('click', function() {
+    localStorage.setItem(STORAGE_KEY, 'rejected');
+    hideBanner();
+  });
+
+  document.getElementById('cookie-reopen').addEventListener('click', function() {
+    showBanner();
+    document.getElementById('cookie-reopen').classList.remove('is-visible');
+  });
+
+  init();
+</script>

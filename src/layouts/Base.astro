@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import CookieBanner from '../components/CookieBanner.astro';
 
 interface Props {
   title: string;
@@ -21,7 +22,7 @@ const {
 
 const resolvedOgImage = ogImage ?? (slug ? `/api/og/${slug}.png` : '/favicon.svg');
 
-const siteTitle = title === 'itrokit' ? title : `${title} — itrokit`;
+const siteTitle = title === 'Дмитрий Иноземцев' ? title : `${title} — Дмитрий Иноземцев`;
 ---
 
 <!doctype html>
@@ -61,20 +62,15 @@ const siteTitle = title === 'itrokit' ? title : `${title} — itrokit`;
       rel="stylesheet"
     />
 
-    <!-- Yandex.Metrika — замени XXXXXXXX на свой номер счётчика -->
-    <!--
-    <script type="text/javascript">
-      (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-      m[i].l=1*new Date();
-      for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-      (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-      ym(XXXXXXXX, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/XXXXXXXX" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    -->
+    <!-- Yandex Webmaster -->
+    <meta name="yandex-verification" content="6af3db3095342d38" />
+
+    <slot name="head-extra" />
   </head>
   <body class="bg-white font-[Inter,sans-serif] min-h-screen text-gray-900 antialiased">
     <slot />
+
+    <slot name="body-extra" />
+    <CookieBanner />
   </body>
 </html>
