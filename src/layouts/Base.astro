@@ -16,7 +16,7 @@ const {
   description = 'Блог об ИИ, триатлоне и работе',
   ogImage,
   ogType = 'website',
-  canonicalURL = Astro.url.toString(),
+  canonicalURL = Astro.url.toString().replace(/\/?$/, '/'),
   slug,
 } = Astro.props;
 

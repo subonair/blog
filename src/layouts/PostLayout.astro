@@ -17,7 +17,7 @@ const {
   description,
   ogImage,
   datePublished,
-  canonicalURL = Astro.url.toString(),
+  canonicalURL = Astro.url.toString().replace(/\/?$/, '/'),
   slug,
 } = Astro.props;
 
