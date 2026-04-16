@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://dimino.me/sitemap-index.xml
+Disallow: *?*
+Sitemap: https://dimino.me/sitemap.xml
