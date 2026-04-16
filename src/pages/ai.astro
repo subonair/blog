@@ -27,7 +27,7 @@ const posts = (await getCollection('blog', ({ data }) => data.category === 'ai')
                 description={post.data.description}
                 date={post.data.date.toISOString().split('T')[0]}
                 image={post.data.image}
-                href={`/${post.id.replace(/\.md$/, '')}`}
+                href={`/${post.id.replace(/\.md$/, '')}/`}
               />
             ))}
           </div>
