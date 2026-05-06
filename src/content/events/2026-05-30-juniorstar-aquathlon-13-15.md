@@ -1,19 +1,22 @@
 ---
-title: 'JUNIORSTAR AQUATHLON 13-15'
+title: "JUNIORSTAR AQUATHLON 13-15"
 date: 2026-05-30
-city: 'Воронеж км км'
+city: "Воронеж"
 sportType: aquathlon
 status: low
 distances:
-  swim: 0.2
-  run: 1.0
+    swim: 0.2
+    run: 1.0
 ---
 
-# JUNIORSTAR AQUATHLON 13-15
-
-**Дата:** 2026-05-30  
-**Город:** Воронеж км км  
+**Дата:** 30.05.2026  
+**Город:** Воронеж  
 **Тип:** aquathlon  
 **Статус слотов:** low
 
 ## Дистанции
+
+- 🏊 Плавание: 0.2 км
+- 🏃 Бег: 1.0 км
+
+[Регистрация на iron-star.com](https://iron-star.com/event/)

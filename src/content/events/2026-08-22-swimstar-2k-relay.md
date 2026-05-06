@@ -1,7 +1,7 @@
 ---
 title: "SWIMSTAR 2K RELAY"
 date: 2026-08-22
-city: "Нижний Новгород"
+city: "Нижний"
 sportType: aquathlon
 status: low
 distances:
@@ -10,7 +10,7 @@ distances:
 ---
 
 **Дата:** 22.08.2026  
-**Город:** Нижний Новгород  
+**Город:** Нижний  
 **Тип:** aquathlon  
 **Статус слотов:** low
 

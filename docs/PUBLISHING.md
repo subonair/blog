@@ -6,11 +6,11 @@
 
 ## Документация
 
-| Расположение | Ссылка                                                             |
-| ------------ | ------------------------------------------------------------------ |
-| Nextcloud    | `Common/flex-agents/global/proj/blogger/dimino_me/PUBLISHING.md`   |
+| Расположение | Ссылка                                                               |
+| ------------ | -------------------------------------------------------------------- |
+| Nextcloud    | `Common/flex-agents/global/proj/blogger/dimino_me/PUBLISHING.md`     |
 | GitHub       | <https://github.com/subonair/dimino_me/blob/main/docs/PUBLISHING.md> |
-| Локально     | `/root/projects/dimino-blog/docs/PUBLISHING.md`                    |
+| Локально     | `/root/projects/dimino-blog/docs/PUBLISHING.md`                      |
 
 ---
 

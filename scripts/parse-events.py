@@ -8,47 +8,73 @@ import requests
 from bs4 import BeautifulSoup
 
 def parse_event_text(text: str) -> dict | None:
-    """Парсит строку карточки события в структуру."""
+    """Парсит строку карточки события в структуру (пошаговый разбор)."""
     text = text.strip()
 
-    # Паттерн: НАЗВАНИЕ ДД.ММ.ГГГГ ГОРОД [СТАТУС] ДИСТАНЦИИ
-    # Статусы: Осталось мало слотов | Продано | (отсутствует = открыта)
-    pattern = re.compile(
-        r'^(.+?)\s+(\d{2}\.\d{2}\.\d{4})\s+(.+?)\s+'
-        r'(Осталось\s+мало\s+слотов|Продано|Лист\s+ожидания)?\s*'
-        r'([\d,.]+\s*км(?:\s+[\d,.]+\s*км)*)$',
-        re.IGNORECASE
-    )
-    m = pattern.match(text)
-    if not m:
-        print(f"  SKIP (no match): {text[:80]}", file=sys.stderr)
+    # 1. Находим дату — разделитель между названием и остальным
+    date_pattern = re.compile(r'\d{2}\.\d{2}\.\d{4}')
+    date_m = date_pattern.search(text)
+    if not date_m:
+        print(f'  SKIP (no date): {text[:80]}', file=sys.stderr)
         return None
 
-    name = m.group(1).strip()
-    date_str = m.group(2).strip()
-    city = m.group(3).strip()
-    status_raw = (m.group(4) or '').strip()
-    distances_str = m.group(5).strip()
+    name = text[:date_m.start()].strip()
+    date = datetime.strptime(date_m.group(), '%d.%m.%Y')
+    after_date = text[date_m.end():].strip()
 
-    # Нормализуем статус
+    # 2. Ищем статус
     status_map = {
         'осталось мало слотов': 'low',
         'продано': 'sold_out',
         'лист ожидания': 'waitlist',
     }
-    status = status_map.get(status_raw.lower(), 'open')
+    status_keywords = list(status_map.keys())
+    status_pattern = re.compile('|'.join(re.escape(k) for k in status_keywords), re.IGNORECASE)
 
-    # Парсим дату
-    date = datetime.strptime(date_str, '%d.%m.%Y')
+    status = 'open'
+    status_m = status_pattern.search(after_date)
 
-    # Парсим дистанции
-    dist_pattern = re.compile(r'([\d,]+)\s*км')
-    distances = [float(d.replace(',', '.')) for d in dist_pattern.findall(distances_str)]
+    if status_m:
+        # Всё до статуса: "ГОРОД НАЗВАНИЕ"
+        before_status = after_date[:status_m.start()].strip()
+        # Всё после статуса: дистанции
+        distances_str = after_date[status_m.end():].strip()
+        status = status_map[status_m.group().lower()]
+    else:
+        # Нет статуса — after_date = "ГОРОД НАЗВАНИЕ ДИСТАНЦИИ"
+        before_status = after_date
+        distances_str = ''
 
-    # Определяем sportType по количеству и порядку дистанций
+    # 3. Отделяем город: «before_status» кончается на название события
+    # Находим последнее вхождение названия
+    name_pos = before_status.rfind(name)
+    if name_pos >= 0:
+        city = before_status[:name_pos].strip()
+        # Убираем название + возможные повторы дистанций (если нет статуса)
+        rest = before_status[name_pos + len(name):].strip()
+        if rest and not distances_str:
+            # rest = возможные дистанции
+            distances_str = rest
+    else:
+        # Название не нашлось (редкий случай, например разный регистр)
+        # Берём первое слово после даты как город
+        parts = before_status.split()
+        city = parts[0] if parts else before_status
+
+    # 4. Парсим дистанции
+    dist_re = re.compile(r'([\d,]+)\s*км')
+    if not distances_str:
+        # Ищем дистанции во всей строке после даты (fallback)
+        distances_str = after_date
+    distances = [float(d.replace(',', '.')) for d in dist_re.findall(distances_str)]
+
+    if not distances:
+        print(f'  SKIP (no distances): {text[:80]}', file=sys.stderr)
+        return None
+
+    # 5. Определяем sportType по количеству и порядку дистанций + названию
+    name_upper = name.upper()
     if len(distances) == 1:
-        # Одна дистанция: бег или плавание. По названию определяем.
-        name_upper = name.upper()
         if any(kw in name_upper for kw in ['SWIM', 'ПЛАВ']):
             sport_type = 'swim'
             mapped = {'swim': distances[0]}
@@ -56,8 +82,6 @@ def parse_event_text(text: str) -> dict | None:
             sport_type = 'run'
             mapped = {'run': distances[0]}
     elif len(distances) == 2:
-        # Две дистанции: swimrun или акватлон или детский дуатлон
-        name_upper = name.upper()
         if 'SWIMRUN' in name_upper or 'СВИМРАН' in name_upper:
             sport_type = 'swimrun'
             mapped = {'swim': distances[0], 'run': distances[1]}
@@ -65,14 +89,13 @@ def parse_event_text(text: str) -> dict | None:
             sport_type = 'aquathlon'
             mapped = {'swim': distances[0], 'run': distances[1]}
         else:
-            # Детские старты: swim + run (иногда bike пропущен)
             sport_type = 'aquathlon'
             mapped = {'swim': distances[0], 'run': distances[1]}
     elif len(distances) == 3:
         sport_type = 'triathlon'
         mapped = {'swim': distances[0], 'bike': distances[1], 'run': distances[2]}
     else:
-        print(f"  SKIP: unexpected distance count {len(distances)}: {text[:80]}", file=sys.stderr)
+        print(f'  SKIP: unexpected distance count {len(distances)}: {text[:80]}', file=sys.stderr)
         return None
 
     return {

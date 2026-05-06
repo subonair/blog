@@ -1,7 +1,7 @@
 ---
 title: "SWIMSTAR 2K RELAY"
 date: 2026-10-02
-city: "Сириус (Сочи)"
+city: "Сириус"
 sportType: aquathlon
 status: low
 distances:
@@ -10,7 +10,7 @@ distances:
 ---
 
 **Дата:** 02.10.2026  
-**Город:** Сириус (Сочи)  
+**Город:** Сириус  
 **Тип:** aquathlon  
 **Статус слотов:** low
 
