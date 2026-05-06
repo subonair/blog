@@ -2,11 +2,10 @@
 title: "SWIMSTAR 2K RELAY"
 date: 2026-08-29
 city: "Завидово"
-sportType: aquathlon
+sportType: swim
 status: low
 distances:
     swim: 1.0
-    run: 1.0
 ---
 
 **Дата:** 29.08.2026  
@@ -17,6 +16,5 @@ distances:
 ## Дистанции
 
 - 🏊 Плавание: 1.0 км
-- 🏃 Бег: 1.0 км
 
 [Регистрация на iron-star.com](https://iron-star.com/event/)

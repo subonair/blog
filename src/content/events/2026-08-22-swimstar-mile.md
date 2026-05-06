@@ -1,7 +1,7 @@
 ---
 title: "SWIMSTAR MILE"
 date: 2026-08-22
-city: "Нижний"
+city: "Нижний Новгород"
 sportType: swim
 status: open
 distances:

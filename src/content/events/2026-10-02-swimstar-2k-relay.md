@@ -1,12 +1,11 @@
 ---
 title: "SWIMSTAR 2K RELAY"
 date: 2026-10-02
-city: "Сириус"
-sportType: aquathlon
+city: "Сириус (Сочи)"
+sportType: swim
 status: low
 distances:
     swim: 1.0
-    run: 1.0
 ---
 
 **Дата:** 02.10.2026  
@@ -17,6 +16,5 @@ distances:
 ## Дистанции
 
 - 🏊 Плавание: 1.0 км
-- 🏃 Бег: 1.0 км
 
 [Регистрация на iron-star.com](https://iron-star.com/event/)
