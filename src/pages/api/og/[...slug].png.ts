@@ -3,14 +3,17 @@ import { getCollection } from 'astro:content';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 
+const ROBOTO_REGULAR = 'https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Mu5mxKKTU1Kvnz.woff2';
+const ROBOTO_BOLD = 'https://fonts.gstatic.com/s/roboto/v32/KFOlCnqEu92Fr1MmWUlfCxc4AMP6lbBP.woff2';
+
 let fontCache400: ArrayBuffer | null = null;
 let fontCache700: ArrayBuffer | null = null;
 
 async function getFonts(): Promise<{ regular: ArrayBuffer; bold: ArrayBuffer }> {
   if (!fontCache400 || !fontCache700) {
     const [regular, bold] = await Promise.all([
-      fetch('https://cdn.jsdelivr.net/fontsource/fonts/roboto@latest/cyrillic-400-normal.ttf').then((r) => r.arrayBuffer()),
-      fetch('https://cdn.jsdelivr.net/fontsource/fonts/roboto@latest/cyrillic-700-normal.ttf').then((r) => r.arrayBuffer()),
+      fetch(ROBOTO_REGULAR).then((r) => r.arrayBuffer()),
+      fetch(ROBOTO_BOLD).then((r) => r.arrayBuffer()),
     ]);
     fontCache400 = regular;
     fontCache700 = bold;
@@ -31,22 +34,21 @@ export const GET: APIRoute = async ({ props }) => {
     {
       type: 'div', key: null,
       props: {
-        style: { width: '1200px', height: '630px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#ffffff', padding: '60px', fontFamily: 'Roboto', boxSizing: 'border-box' },
+        style: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: 1200, height: 630, padding: 64, backgroundColor: '#0f172a', fontFamily: 'Roboto' },
         children: [
-          { type: 'div', key: null, props: { style: { fontSize: '56px', fontWeight: 700, color: '#111827', lineHeight: 1.2, maxWidth: '1000px' }, children: post.data.title } },
-          { type: 'div', key: null, props: { style: { display: 'flex', flexDirection: 'column', gap: '16px' }, children: [
-            { type: 'div', key: null, props: { style: { fontSize: '28px', color: '#6b7280', lineHeight: 1.4, maxWidth: '900px' }, children: post.data.description } },
-            { type: 'div', key: null, props: { style: { fontSize: '22px', color: '#9ca3af', fontWeight: 400 }, children: 'dimino.me' } },
+          { type: 'div', key: null, props: { style: { fontSize: 52, fontWeight: 700, color: '#f8fafc', lineHeight: 1.15, display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }, children: post.data.title } },
+          { type: 'div', key: null, props: { style: { display: 'flex', flexDirection: 'column', gap: 12 }, children: [
+            { type: 'div', key: null, props: { style: { fontSize: 26, color: '#94a3b8', lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }, children: post.data.description } },
+            { type: 'div', key: null, props: { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 20, color: '#64748b', fontWeight: 400 }, children: ['dimino.me'] } },
           ] } },
         ],
       },
     },
-    { width: 1200, height: 630, fonts: [{ name: 'Roboto', data: regular, weight: 400, style: 'normal' }, { name: 'Roboto', data: bold, weight: 700, style: 'normal' }] },
+    { width: 1200, height: 630, fonts: [{ name: 'Roboto', data: regular, weight: 400 }, { name: 'Roboto', data: bold, weight: 700 }] },
   );
 
   const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: 1200 } });
-  const pngData = resvg.render();
-  const pngBuffer = pngData.asPng();
+  const buf = resvg.render().asPng();
 
-  return new Response(new Uint8Array(pngBuffer), { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=31536000, immutable' } });
+  return new Response(new Uint8Array(buf), { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=31536000, immutable' } });
 };
