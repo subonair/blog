@@ -11,7 +11,10 @@ const posts = (await getCollection('blog', ({ data }) => data.category === 'ai')
 );
 ---
 
-<Base title="ИИ" description="Эксперименты и выводы про искусственный интеллект">
+<Base
+  title="ИИ — эксперименты и инструменты"
+  description="Искусственный интеллект: практические эксперименты с нейросетями, обзоры ИИ-инструментов и честные выводы без хайпа. Проверяю на себе и делюсь результатами."
+>
   <Header />
 
   <main class="max-w-3xl mx-auto px-4 py-10">
@@ -29,6 +32,7 @@ const posts = (await getCollection('blog', ({ data }) => data.category === 'ai')
                 title={post.data.title}
                 description={post.data.description}
                 date={post.data.date.toISOString().split('T')[0]}
+                slug={`${post.data.category}/${post.id.split('/').pop()?.replace(/\.md$/, '')}`}
                 image={post.data.image}
                 href={`/${post.id.replace(/\.md$/, '')}/`}
               />

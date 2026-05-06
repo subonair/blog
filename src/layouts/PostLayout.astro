@@ -25,12 +25,25 @@ const resolvedOgImage = ogImage ?? (slug ? `/api/og/${slug}.png` : '/favicon.svg
 
 const articleSchema = {
   '@context': 'https://schema.org',
-  '@type': 'Article',
+  '@type': 'BlogPosting',
   headline: title,
+  description: description || undefined,
   datePublished,
-  author: { '@type': 'Person', name: 'Дмитрий Иноземцев' },
+  author: {
+    '@type': 'Person',
+    name: 'Дмитрий Иноземцев',
+    url: 'https://dimino.me/about/',
+  },
+  publisher: {
+    '@type': 'Person',
+    name: 'Дмитрий Иноземцев',
+  },
   image: resolvedOgImage,
   url: canonicalURL,
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonicalURL,
+  },
 };
 ---
 

@@ -14,7 +14,10 @@ const upcoming = events.filter((e) => e.data.date >= now);
 const past = events.filter((e) => e.data.date < now);
 ---
 
-<Base title="Календарь стартов — Триатлон" description="Календарь соревнований IronStar: ближайшие старты, регистрация, стоимость участия">
+<Base
+  title="Календарь стартов IronStar"
+  description="Календарь триатлонных стартов IronStar: даты соревнований, дистанции, стоимость участия и регистрация. Ближайшие и прошедшие события — всё в одном месте."
+>
   <Header />
 
   <main class="max-w-3xl mx-auto px-4 py-10">

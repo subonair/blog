@@ -26,7 +26,10 @@ const posts = (await getCollection('blog', ({ data }) => data.category === 'serv
 );
 ---
 
-<Base title="Услуги" description="Чем могу быть полезен — консультации по ИИ и процессам">
+<Base
+  title="Услуги — консультации и менторинг"
+  description="Консультации по внедрению ИИ, аудит процессов и менторинг в продуктовой разработке. Помогаю командам и основателям принимать практические решения."
+>
   <Header />
 
   <main class="max-w-3xl mx-auto px-4 py-10">
@@ -56,6 +59,7 @@ const posts = (await getCollection('blog', ({ data }) => data.category === 'serv
                 title={post.data.title}
                 description={post.data.description}
                 date={post.data.date.toISOString().split('T')[0]}
+                slug={`${post.data.category}/${post.id.split('/').pop()?.replace(/\.md$/, '')}`}
                 image={post.data.image}
                 href={`/${post.id.replace(/\.md$/, '')}/`}
               />

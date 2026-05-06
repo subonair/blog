@@ -14,7 +14,7 @@ interface Props {
 
 const {
   title,
-  description = 'Блог об ИИ, триатлоне и работе',
+  description = 'Блог Дмитрия Иноземцева об искусственном интеллекте, триатлоне и удалённой работе. Честные эксперименты, тренировки, обзоры и практический опыт',
   ogImage,
   ogType = 'website',
   canonicalURL = Astro.url.toString().replace(/\/?$/, '/'),
@@ -24,9 +24,9 @@ const {
 
 const isNoindex = robots.includes('noindex');
 
-const resolvedOgImage = ogImage ?? (slug ? `/api/og/${slug}.png` : '/favicon.svg');
+const resolvedOgImage = ogImage ?? (slug ? `/api/og/${slug}.png` : '/api/og/default.png');
 
-const siteTitle = title === 'Дмитрий Иноземцев' ? title : `${title} — Дмитрий Иноземцев`;
+const siteTitle = title.includes('Дмитрий Иноземцев') ? title : `${title} — Дмитрий Иноземцев`;
 ---
 
 <!doctype html>

@@ -4,10 +4,15 @@ interface Props {
   description: string;
   date: string;
   image?: string;
+  slug: string;
   href: string;
 }
 
-const { title, description, date, image, href } = Astro.props;
+const { title, description, date, image, slug, href } = Astro.props;
+
+const resolvedImage = image && !image.includes('placeholder')
+  ? image
+  : `/api/og/${slug}.png`;
 
 const formattedDate = new Date(date).toLocaleDateString('ru-RU', {
   year: 'numeric',
@@ -21,19 +26,17 @@ const formattedDate = new Date(date).toLocaleDateString('ru-RU', {
     href={href}
     class="group block bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all"
   >
-    {
-      image && (
-        <div class="aspect-[16/9] bg-gray-50 overflow-hidden">
-          <img
-            src={image}
-            alt={title}
-            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-      )
-    }
+    <div class="aspect-[16/9] bg-gray-50 overflow-hidden">
+      <img
+        src={resolvedImage}
+        alt={title}
+        width="1200"
+        height="630"
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
     <div class="p-5">
       <time datetime={date} class="text-xs text-gray-400 font-medium uppercase tracking-wide">
         {formattedDate}

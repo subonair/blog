@@ -5,7 +5,6 @@ description:
   для AI-разработки.
 date: 2026-05-05
 category: ai
-image: /images/placeholder.jpg
 ---
 
 # OpenCode — опенсорсный AI-кодинг-агент с аудиторией 6.5 миллионов

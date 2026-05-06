@@ -11,7 +11,10 @@ const posts = (await getCollection('blog', ({ data }) => data.category === 'it')
 );
 ---
 
-<Base title="IT" description="Технологии, разработка, продукт и карьера в IT">
+<Base
+  title="IT — технологии и разработка"
+  description="IT-раздел: технологии, разработка продуктов, управление командой и карьера. Пишу о том, что реально работает — из опыта в продуктовой разработке."
+>
   <Header />
 
   <main class="max-w-3xl mx-auto px-4 py-10">
@@ -27,6 +30,7 @@ const posts = (await getCollection('blog', ({ data }) => data.category === 'it')
                 title={post.data.title}
                 description={post.data.description}
                 date={post.data.date.toISOString().split('T')[0]}
+                slug={`${post.data.category}/${post.id.split('/').pop()?.replace(/\.md$/, '')}`}
                 image={post.data.image}
                 href={`/${post.id.replace(/\.md$/, '')}/`}
               />

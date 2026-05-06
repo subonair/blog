@@ -5,7 +5,6 @@ description:
   через гермес-скилл.
 date: 2026-05-05
 category: ai
-image: /images/placeholder.jpg
 ---
 
 # Claude Desktop теперь работает с Ollama Cloud

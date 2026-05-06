@@ -5,16 +5,20 @@ import Footer from '../components/Footer.astro';
 import TelegramCTA from '../components/TelegramCTA.astro';
 
 const person = {
-  name: 'itrokit',
+  name: 'Дмитрий Иноземцев',
   jobTitle: 'Продуктовый менеджер, энтузиаст ИИ и триатлет',
   url: 'https://dimino.me',
   sameAs: ['https://t.me/itrokit'],
+  image: 'https://dimino.me/images/about-photo.webp',
   description:
     'Работаю в продукте, слежу за ИИ и финишировал несколько триатлонов. Пишу о том, что сам проверяю.',
 };
 ---
 
-<Base title="Обо мне" description={person.description}>
+<Base
+  title="Обо мне — блог и контакты"
+  description="Дмитрий Иноземцев — продуктовый менеджер, энтузиаст ИИ и триатлет. Пишу о том, что сам проверяю: нейросети в работе, длинные дистанции и системное мышление."
+>
   <script
     type="application/ld+json"
     set:html={JSON.stringify({
@@ -24,6 +28,7 @@ const person = {
       jobTitle: person.jobTitle,
       url: person.url,
       sameAs: person.sameAs,
+      image: person.image,
       description: person.description,
     })}
   />
