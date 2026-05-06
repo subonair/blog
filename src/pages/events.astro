@@ -1,0 +1,200 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import EventCard from '../components/EventCard.astro';
+
+const events = (await getCollection('events')).sort(
+  (a, b) => a.data.date.valueOf() - b.data.date.valueOf(),
+);
+
+const now = new Date();
+const upcoming = events.filter((e) => e.data.date >= now);
+const past = events.filter((e) => e.data.date < now);
+
+// Gather all unique sport types
+const allTypes = [...new Set(events.map((e) => e.data.sportType))];
+
+const pageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Календарь стартов',
+  description:
+    'Календарь стартов по триатлону, бегу, плаванию и другим видам спорта. Ближайшие и прошедшие события от IronStar и RussiaRunning.',
+  url: 'https://dimino.me/events/',
+  isPartOf: {
+    '@type': 'WebSite',
+    name: 'Дмитрий Иноземцев',
+    url: 'https://dimino.me',
+  },
+};
+---
+
+<Base
+  title="Календарь стартов"
+  description="Календарь стартов по триатлону, бегу, плаванию и другим видам спорта. Ближайшие и прошедшие события от IronStar и RussiaRunning."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
+  <Header />
+
+  <main class="max-w-3xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-bold text-gray-900">Календарь стартов</h1>
+    <p class="mt-3 text-gray-500">
+      События по триатлону, бегу и плаванию в России и за её пределами.
+    </p>
+
+    <div class="mt-6 bg-blue-50 border border-blue-100 rounded-2xl p-5 text-sm text-gray-700 space-y-3">
+      <p>
+        Мы собираем старты с <strong>2 источников</strong> —
+        <a href="https://iron-star.com/event/" class="text-blue-600 hover:underline" target="_blank">IronStar</a>
+        и
+        <a href="https://reg.russiarunning.com/" class="text-blue-600 hover:underline" target="_blank">RussiaRunning</a>.
+        База постоянно пополняется.
+      </p>
+      <p>
+        Не нашли свой старт?
+        <a href="https://t.me/subonair" class="font-medium text-blue-600 hover:underline" target="_blank">Напишите мне в Telegram</a> —
+        я добавлю новый источник в анализ, и агенты включат его в календарь.
+      </p>
+    </div>
+
+    <!-- Filter chips (multiselect) -->
+    <div class="mt-8">
+      <label class="block text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Тип занятия</label>
+      <div class="flex flex-wrap gap-2" id="filter-chips">
+        {allTypes.map((type) => (
+          <button
+            class="filter-chip px-3 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer bg-blue-50 border-blue-200 text-blue-700"
+            data-type={type}
+          >
+            {type === 'triathlon' && '🏊🚴🏃 Триатлон'}
+            {type === 'swim' && '🏊 Плавание'}
+            {type === 'run' && '🏃 Бег'}
+            {type === 'bike' && '🚴 Вело'}
+            {type === 'aquathlon' && '🏊🏃 Акватлон'}
+            {type === 'swimrun' && '🏊🏃 Swimrun'}
+            {type === 'duathlon' && '🚴🏃 Дуатлон'}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Upcoming events -->
+    {
+      upcoming.length > 0 && (
+        <section class="mt-10" id="upcoming-section">
+          <h2 class="text-xl font-semibold text-gray-800">
+            Ближайшие старты (<span id="upcoming-count">{upcoming.length}</span>)
+          </h2>
+
+          <div class="mt-4 space-y-2" id="upcoming-list">
+            {upcoming.map((event) => (
+              <div class="event-item" data-sport={event.data.sportType}>
+                <EventCard
+                  title={event.data.title}
+                  date={event.data.date}
+                  city={event.data.city}
+                  sportType={event.data.sportType}
+                  status={event.data.status}
+                  distances={event.data.distances}
+                  sourceUrl={event.data.sourceUrl}
+                  prices={event.data.prices}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Past events (collapsed) -->
+    {
+      past.length > 0 && (
+        <section class="mt-10" id="past-section">
+          <details id="past-details">
+            <summary class="text-xl font-semibold text-gray-800 cursor-pointer">
+              Прошедшие старты (<span id="past-count">{past.length}</span>)
+            </summary>
+
+            <div class="mt-4 space-y-2" id="past-list">
+              {past.map((event) => (
+                <div class="event-item" data-sport={event.data.sportType}>
+                  <EventCard
+                    title={event.data.title}
+                    date={event.data.date}
+                    city={event.data.city}
+                    sportType={event.data.sportType}
+                    status={event.data.status}
+                    distances={event.data.distances}
+                    sourceUrl={event.data.sourceUrl}
+                    prices={event.data.prices}
+                  />
+                </div>
+              ))}
+            </div>
+          </details>
+        </section>
+      )
+    }
+
+    <div class="mt-8">
+      <a href="/triatlon/" class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+        ← К триатлону
+      </a>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
+
+<script>
+  const chips = document.querySelectorAll('.filter-chip');
+  const eventItems = document.querySelectorAll('.event-item');
+
+  function updateFilters() {
+    const active = new Set<string>();
+    chips.forEach((c) => {
+      if (c.classList.contains('bg-blue-50')) active.add((c as HTMLElement).dataset.type!);
+    });
+
+    let upcomingVisible = 0;
+    let pastVisible = 0;
+
+    eventItems.forEach((el) => {
+      const sport = (el as HTMLElement).dataset.sport!;
+      if (active.has(sport)) {
+        (el as HTMLElement).style.display = '';
+        const section = el.closest('#upcoming-list, #past-list');
+        if (section?.id === 'upcoming-list') upcomingVisible++;
+        else pastVisible++;
+      } else {
+        (el as HTMLElement).style.display = 'none';
+      }
+    });
+
+    // Update counts
+    document.getElementById('upcoming-count')!.textContent = String(upcomingVisible);
+    document.getElementById('past-count')!.textContent = String(pastVisible);
+
+    // Hide sections if empty
+    const upcomingSection = document.getElementById('upcoming-section');
+    const pastSection = document.getElementById('past-section');
+    if (upcomingSection) upcomingSection.style.display = upcomingVisible > 0 ? '' : 'none';
+    if (pastSection) pastSection.style.display = pastVisible > 0 ? '' : 'none';
+  }
+
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const isActive = chip.classList.contains('bg-blue-50');
+      if (isActive) {
+        chip.classList.remove('bg-blue-50', 'border-blue-200', 'text-blue-700');
+        chip.classList.add('bg-white', 'border-gray-200', 'text-gray-500');
+      } else {
+        chip.classList.remove('bg-white', 'border-gray-200', 'text-gray-500');
+        chip.classList.add('bg-blue-50', 'border-blue-200', 'text-blue-700');
+      }
+      updateFilters();
+    });
+  });
+</script>

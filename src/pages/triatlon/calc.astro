@@ -20,12 +20,19 @@ import Footer from '../../components/Footer.astro';
       <div>
         <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Дистанция</label>
         <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-          {['Ironman', 'Half', 'Olympic', 'Sprint', 'Super', 'Своя'].map((d) => (
+          {[
+            { name: 'Ironman', icon: '🔥' },
+            { name: 'Half', icon: '⚡' },
+            { name: 'Olympic', icon: '🏅' },
+            { name: 'Sprint', icon: '💨' },
+            { name: 'Super', icon: '🦾' },
+            { name: 'Своя', icon: '✏️' },
+          ].map((d) => (
             <button
               class="distance-btn px-2 py-2 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors active:bg-blue-50"
-              data-distance={d}
+              data-distance={d.name}
             >
-              {d}
+              <span class="mr-1">{d.icon}</span>{d.name}
             </button>
           ))}
         </div>
@@ -36,7 +43,7 @@ import Footer from '../../components/Footer.astro';
         <!-- Swim -->
         <div class="bg-gray-50 rounded-xl p-4 space-y-3">
           <div class="flex items-center gap-2"><span class="text-2xl">🏊</span><span class="text-sm font-medium text-gray-700">Плавание</span></div>
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-[1fr_1fr_1.3fr] gap-3">
             <div>
               <label class="block text-xs text-gray-400 mb-1">Дистанция, км</label>
               <div class="flex items-stretch">
@@ -67,12 +74,12 @@ import Footer from '../../components/Footer.astro';
         <!-- Bike -->
         <div class="bg-gray-50 rounded-xl p-4 space-y-3">
           <div class="flex items-center gap-2"><span class="text-2xl">🚴</span><span class="text-sm font-medium text-gray-700">Велосипед</span></div>
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-[1fr_1fr_1.3fr] gap-3">
             <div>
               <label class="block text-xs text-gray-400 mb-1">Дистанция, км</label>
               <div class="flex items-stretch">
                 <button class="step-down px-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg text-gray-500 font-bold text-sm transition-colors" data-target="bike-dist" data-step="5">−</button>
-                <input type="number" id="bike-dist" value="180.25" step="0.1" min="0" class="w-full px-2 py-2.5 border-y border-gray-200 text-base bg-white text-center" />
+                <input type="number" id="bike-dist" value="180" step="1" min="0" class="w-full px-2 py-2.5 border-y border-gray-200 text-base bg-white text-center" />
                 <button class="step-up px-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg text-gray-500 font-bold text-sm transition-colors" data-target="bike-dist" data-step="5">+</button>
               </div>
             </div>
@@ -98,7 +105,7 @@ import Footer from '../../components/Footer.astro';
         <!-- Run -->
         <div class="bg-gray-50 rounded-xl p-4 space-y-3">
           <div class="flex items-center gap-2"><span class="text-2xl">🏃</span><span class="text-sm font-medium text-gray-700">Бег</span></div>
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-[1fr_1fr_1.3fr] gap-3">
             <div>
               <label class="block text-xs text-gray-400 mb-1">Дистанция, км</label>
               <div class="flex items-stretch">
@@ -173,7 +180,7 @@ import Footer from '../../components/Footer.astro';
 
   <script>
     const presets = {
-      'Ironman': { swim: 3.86, bike: 180.25, run: 42.2 },
+      'Ironman': { swim: 3.86, bike: 180, run: 42.2 },
       'Half': { swim: 1.9, bike: 90, run: 21.1 },
       'Olympic': { swim: 1.5, bike: 40, run: 10 },
       'Sprint': { swim: 0.75, bike: 20, run: 5 },
@@ -181,8 +188,19 @@ import Footer from '../../components/Footer.astro';
     };
     const lastEdited: Record<string, string> = { swim: 'pace', bike: 'speed', run: 'pace' };
 
-    function parseTime(str: string): number { const p = str.split(':').map(Number); if (p.length === 2) return p[0] * 60 + p[1]; if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2]; return 0; }
-    function formatTime(sec: number): string { if (sec <= 0 || isNaN(sec)) return '--'; const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.floor(sec % 60); if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; return `${m}:${String(s).padStart(2, '0')}`; }
+    function parseTime(str: string): number {
+      if (!str.trim()) return 0;
+      // Already formatted: mm:ss or hh:mm:ss
+      if (str.includes(':')) { const p = str.split(':').map(Number); if (p.length === 2) return p[0] * 60 + p[1]; if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2]; return 0; }
+      // Dot/comma: m.ss → mm:ss
+      if (str.includes('.') || str.includes(',')) { const p = str.split(/[.,]/).map(Number); if (p.length === 2) return p[0] * 60 + p[1]; if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2]; return 0; }
+      // Raw number: 655 → 6:55, 130 → 1:30, 13000 → 1:30:00
+      const n = parseInt(str, 10);
+      if (n >= 100000) { const h = Math.floor(n / 10000); const m = Math.floor((n % 10000) / 100); return h * 3600 + m * 60 + (n % 100); }
+      if (n >= 100) { const m = Math.floor(n / 100); return m * 60 + (n % 100); }
+      return n; // bare seconds
+    }
+    function formatTime(sec: number): string { if (sec <= 0 || isNaN(sec)) return '0:00:00'; const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.floor(sec % 60); return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; }
     function paceStr(sec: number, units: number): string { if (sec <= 0 || units <= 0) return ''; const v = sec / units; return `${Math.floor(v / 60)}:${String(Math.floor(v % 60)).padStart(2, '0')}`; }
     function get(id: string): HTMLInputElement { return document.getElementById(id) as HTMLInputElement; }
 
@@ -243,7 +261,7 @@ import Footer from '../../components/Footer.astro';
         let sec = parseTime(target.value) || 0;
         sec = Math.max(0, sec + (isUp ? 15 : -15));
         const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.floor(sec % 60);
-        target.value = h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`;
+        target.value = `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         target.dispatchEvent(new Event('input', { bubbles: true }));
       });
     });
