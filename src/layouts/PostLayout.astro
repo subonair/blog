@@ -21,7 +21,7 @@ const {
   slug,
 } = Astro.props;
 
-const resolvedOgImage = ogImage ?? (slug ? `/api/og/${slug}.png` : '/favicon.svg');
+const resolvedOgImage = ogImage ?? (slug ? `/api/og/${slug}.png` : '/api/og/default.png');
 
 const articleSchema = {
   '@context': 'https://schema.org',
