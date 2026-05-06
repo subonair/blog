@@ -9,6 +9,7 @@ interface Props {
   ogType?: string;
   canonicalURL?: string;
   slug?: string;
+  robots?: string;
 }
 
 const {
@@ -18,7 +19,10 @@ const {
   ogType = 'website',
   canonicalURL = Astro.url.toString().replace(/\/?$/, '/'),
   slug,
+  robots = 'index, follow',
 } = Astro.props;
+
+const isNoindex = robots.includes('noindex');
 
 const resolvedOgImage = ogImage ?? (slug ? `/api/og/${slug}.png` : '/favicon.svg');
 
@@ -36,12 +40,12 @@ const siteTitle = title === 'Дмитрий Иноземцев' ? title : `${tit
 
     <title>{siteTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL} />
-    <meta name="robots" content="index, follow" />
+    {isNoindex ? null : <link rel="canonical" href={canonicalURL} />}
+    <meta name="robots" content={robots} />
 
     <!-- Open Graph -->
     <meta property="og:type" content={ogType} />
-    <meta property="og:url" content={canonicalURL} />
+    {isNoindex ? null : <meta property="og:url" content={canonicalURL} />}
     <meta property="og:title" content={siteTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={resolvedOgImage} />
