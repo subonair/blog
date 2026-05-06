@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import EventCard from '../../components/EventCard.astro';
+
+const events = (await getCollection('events')).sort(
+  (a, b) => a.data.date.valueOf() - b.data.date.valueOf(),
+);
+
+const now = new Date();
+const upcoming = events.filter((e) => e.data.date >= now);
+const past = events.filter((e) => e.data.date < now);
+---
+
+<Base title="Календарь стартов — Триатлон" description="Календарь соревнований IronStar: ближайшие старты, регистрация, стоимость участия">
+  <Header />
+
+  <main class="max-w-3xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-bold text-gray-900">Календарь стартов</h1>
+    <p class="mt-3 text-gray-500">
+      Календарь соревнований IronStar — даты, дистанции и стоимость участия.
+    </p>
+
+    <!-- Upcoming events -->
+    {
+      upcoming.length > 0 && (
+        <section class="mt-10">
+          <h2 class="text-xl font-semibold text-gray-800">Ближайшие старты ({upcoming.length})</h2>
+
+          <div class="mt-4 space-y-2">
+            {upcoming.map((event) => (
+              <EventCard
+                title={event.data.title}
+                date={event.data.date}
+                city={event.data.city}
+                status={event.data.status}
+                distances={event.data.distances}
+                sourceUrl={event.data.sourceUrl}
+                prices={event.data.prices}
+              />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Past events (collapsed) -->
+    {
+      past.length > 0 && (
+        <section class="mt-10">
+          <details>
+            <summary class="text-xl font-semibold text-gray-800 cursor-pointer">
+              Прошедшие старты ({past.length})
+            </summary>
+
+            <div class="mt-4 space-y-2">
+              {past.map((event) => (
+                <EventCard
+                  title={event.data.title}
+                  date={event.data.date}
+                  city={event.data.city}
+                  status={event.data.status}
+                  distances={event.data.distances}
+                  sourceUrl={event.data.sourceUrl}
+                  prices={event.data.prices}
+                />
+              ))}
+            </div>
+          </details>
+        </section>
+      )
+    }
+
+    <div class="mt-8">
+      <a href="/triatlon/" class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+        ← Назад к триатлону
+      </a>
+    </div>
+  </main>
+
+  <Footer />
+</Base>

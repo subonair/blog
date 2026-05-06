@@ -25,6 +25,20 @@ const events = defineCollection({
       bike: z.number().optional(),
       run: z.number().optional(),
     }),
+    sourceUrl: z.string().optional(),
+    prices: z
+      .array(
+        z.object({
+          category: z.string(),
+          levels: z.array(
+            z.object({
+              level: z.number(),
+              price: z.number(),
+            }),
+          ),
+        }),
+      )
+      .optional(),
   }),
 });
 

@@ -3,11 +3,13 @@
  * Парсер событий iron-star.com/event/ → .md файлы в src/content/events/
  * Использует Playwright, так как сайт — Nuxt SPA.
  *
- * Usage: node scripts/parse-events.mjs
+ * Собирает: title, date, city, sportType, status, distances, sourceUrl, prices
+ *
+ * Usage: node scripts/parse-events.mjs [--skip-prices]
  */
 
 import { chromium } from 'playwright';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,6 +17,8 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = join(__dirname, '..');
 const EVENTS_DIR = join(PROJECT_DIR, 'src', 'content', 'events');
+
+const SKIP_PRICES = process.argv.includes('--skip-prices');
 
 /**
  * Определяет sportType по названию и дистанциям.
@@ -78,10 +82,67 @@ function slugify(title, dateStr) {
 }
 
 /**
+ * Парсит цены с отдельной страницы события.
+ * Возвращает массив { category, levels: [{ level, price }] }
+ */
+async function parsePrices(page, eventUrl) {
+  if (SKIP_PRICES) return [];
+
+  try {
+    await page.goto(eventUrl, { waitUntil: 'networkidle', timeout: 15000 });
+
+    // Ищем блок "СТОИМОСТЬ УЧАСТИЯ"
+    const prices = await page.evaluate(() => {
+      const result = [];
+      const allText = document.body.innerText;
+
+      // Если нет раздела стоимости — возвращаем пустой
+      if (!allText.includes('СТОИМОСТЬ УЧАСТИЯ')) return result;
+
+      // Ищем все段落 с ценами
+      // Формат: "Индивидуальное участие" → уровни, "Эстафета" → уровни
+      const priceRegex = /(\d+)\s*уровень:\s*([\d\s]+)\s*₽/gi;
+      const lines = allText.split('\n');
+
+      let currentCategory = 'Индивидуальное участие';
+      const categories = {};
+
+      for (const line of lines) {
+        const catMatch = line.match(/^(Индивидуальное участие|Эстафета|Командное участие)/i);
+        if (catMatch) {
+          currentCategory = catMatch[1];
+          continue;
+        }
+
+        const match = /(\d+)\s*уровень:\s*([\d\s]+)\s*₽/i.exec(line);
+        if (match) {
+          if (!categories[currentCategory]) categories[currentCategory] = [];
+          categories[currentCategory].push({
+            level: parseInt(match[1]),
+            price: parseInt(match[2].replace(/\s/g, '')),
+          });
+        }
+      }
+
+      for (const [cat, levels] of Object.entries(categories)) {
+        result.push({ category: cat, levels });
+      }
+
+      return result;
+    });
+
+    return prices;
+  } catch (err) {
+    console.log(`    ⚠ Price parse failed: ${err.message}`);
+    return [];
+  }
+}
+
+/**
  * Генерирует .md контент
  */
 function generateMd(event) {
-  const { title, dateStr, city, sportType, status, distances } = event;
+  const { title, dateStr, city, sportType, status, distances, sourceUrl, prices } = event;
   const distKeys = Object.entries(distances);
 
   const frontmatterDists = distKeys.map(([k, v]) => `    ${k}: ${v}`).join('\n');
@@ -93,6 +154,33 @@ function generateMd(event) {
     })
     .join('\n');
 
+  // Prices in YAML
+  let pricesYaml = '';
+  if (prices && prices.length > 0) {
+    pricesYaml =
+      '\nprices:\n' +
+      prices
+        .map(
+          (p) =>
+            `  - category: "${p.category}"\n    levels:\n${p.levels.map((l) => `      - { level: ${l.level}, price: ${l.price} }`).join('\n')}`,
+        )
+        .join('\n');
+  }
+
+  // Prices in body
+  let pricesBody = '';
+  if (prices && prices.length > 0) {
+    pricesBody = '\n\n## Стоимость участия\n';
+    for (const cat of prices) {
+      if (prices.length > 1) pricesBody += `\n**${cat.category}:**\n`;
+      for (const l of cat.levels) {
+        pricesBody += `- ${l.level} уровень: ${l.price.toLocaleString('ru-RU')} ₽\n`;
+      }
+    }
+  }
+
+  const sourceUrlStr = sourceUrl ? `\nsourceUrl: "${sourceUrl}"` : '';
+
   return `---
 title: "${title}"
 date: ${dateStr}
@@ -100,7 +188,7 @@ city: "${city}"
 sportType: ${sportType}
 status: ${status}
 distances:
-${frontmatterDists}
+${frontmatterDists}${sourceUrlStr}${pricesYaml}
 ---
 
 **Дата:** ${dateStr.replace(/-/g, '.')}
@@ -111,8 +199,8 @@ ${frontmatterDists}
 ## Дистанции
 
 ${bodyLines}
-
-[Регистрация на iron-star.com](https://iron-star.com/event/)
+${pricesBody}
+${sourceUrl ? `[Регистрация на iron-star.com →](${sourceUrl})` : '[Регистрация на iron-star.com](https://iron-star.com/event/)'}
 `;
 }
 
@@ -125,7 +213,10 @@ async function main() {
 
   try {
     console.log('Navigating to iron-star.com/event/ ...');
-    await page.goto('https://iron-star.com/event/', { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto('https://iron-star.com/event/', {
+      waitUntil: 'networkidle',
+      timeout: 30000,
+    });
 
     // Ждём загрузки карточек
     await page.waitForSelector('.event-item-wrap', { timeout: 10000 });
@@ -140,7 +231,7 @@ async function main() {
       prevCount = count;
     }
 
-    // Извлекаем данные
+    // Извлекаем данные с главной страницы
     const events = await page.$$eval('.event-item-wrap', (els) =>
       els.map((el) => {
         const link = el.querySelector('a.event-item');
@@ -173,7 +264,7 @@ async function main() {
         skipped++;
         continue;
       }
-      const dateStr = `${dateMatch[3]}-${dateMatch[1]}-${dateMatch[2]}`;
+      const dateStr = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
 
       // Парсим дистанции
       const dists = distStrs.map(parseDistance).filter((d) => d > 0);
@@ -191,7 +282,12 @@ async function main() {
       }
 
       const status = detectStatus(statusText);
+      const sourceUrl = href || '';
       const slug = slugify(title, dateStr);
+
+      console.log(`  Parsing prices for ${title}...`);
+      const prices = await parsePrices(page, sourceUrl);
+
       const md = generateMd({
         title,
         dateStr,
@@ -199,11 +295,13 @@ async function main() {
         sportType: sport.type,
         status,
         distances: sport.dists,
+        sourceUrl,
+        prices: prices.length > 0 ? prices : undefined,
       });
 
       const filepath = join(EVENTS_DIR, `${slug}.md`);
       await writeFile(filepath, md, 'utf-8');
-      console.log(`  ✓ ${slug}.md (${sport.type}, ${status})`);
+      console.log(`  ✓ ${slug}.md (${sport.type}, ${status}, ${prices.length} price cats)`);
       saved++;
     }
 

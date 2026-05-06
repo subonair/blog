@@ -28,25 +28,27 @@ const upcoming = events.filter((e) => e.data.date >= now);
       Тренировки, гонки, снаряжение и всё, что помогает финишировать.
     </p>
 
-    <!-- Ближайшие старты -->
+    <!-- Ближайшие старты (only 10) -->
     {
       upcoming.length > 0 && (
         <section class="mt-12">
-          <h2 class="text-xl font-semibold text-gray-800">Ближайшие старты ({upcoming.length})</h2>
-          <p class="mt-1 text-sm text-gray-400">
-            Календарь IRONSTAR — парсится с iron-star.com/event/
-          </p>
+          <div class="flex items-baseline justify-between">
+            <h2 class="text-xl font-semibold text-gray-800">Ближайшие старты</h2>
+            <a href="/triatlon/events/" class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+              Все старты →
+            </a>
+          </div>
 
           <div class="mt-4 space-y-2">
             {upcoming.slice(0, 10).map((event) => (
               <EventCard
                 title={event.data.title}
-                slug={event.id.replace(/\.md$/, '')}
                 date={event.data.date}
                 city={event.data.city}
-                sportType={event.data.sportType}
                 status={event.data.status}
                 distances={event.data.distances}
+                sourceUrl={event.data.sourceUrl}
+                prices={event.data.prices}
               />
             ))}
           </div>
