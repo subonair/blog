@@ -34,9 +34,9 @@ import Footer from '../../components/Footer.astro';
       <!-- Disciplines -->
       <div class="space-y-4">
         <!-- Swim -->
-        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-4">
-          <span class="text-2xl">🏊</span>
-          <div class="flex-1 grid grid-cols-2 gap-3">
+        <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+          <div class="flex items-center gap-2"><span class="text-2xl">🏊</span><span class="text-sm font-medium text-gray-700">Плавание</span></div>
+          <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="block text-xs text-gray-400 mb-1">Дистанция, км</label>
               <input type="number" id="swim-dist" value="3.86" step="0.01" min="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base bg-white text-center" />
@@ -45,13 +45,17 @@ import Footer from '../../components/Footer.astro';
               <label class="block text-xs text-gray-400 mb-1">Темп /100м</label>
               <input type="text" id="swim-pace" value="2:00" placeholder="мм:сс" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base bg-white text-center" />
             </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">Время</label>
+              <input type="text" id="swim-time" value="" placeholder="ч:мм:сс" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base bg-white text-center" />
+            </div>
           </div>
         </div>
 
         <!-- Bike -->
-        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-4">
-          <span class="text-2xl">🚴</span>
-          <div class="flex-1 grid grid-cols-2 gap-3">
+        <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+          <div class="flex items-center gap-2"><span class="text-2xl">🚴</span><span class="text-sm font-medium text-gray-700">Велосипед</span></div>
+          <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="block text-xs text-gray-400 mb-1">Дистанция, км</label>
               <input type="number" id="bike-dist" value="180.25" step="0.1" min="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base bg-white text-center" />
@@ -60,13 +64,17 @@ import Footer from '../../components/Footer.astro';
               <label class="block text-xs text-gray-400 mb-1">Скорость, км/ч</label>
               <input type="number" id="bike-speed" value="30" step="0.5" min="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base bg-white text-center" />
             </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">Время</label>
+              <input type="text" id="bike-time" value="" placeholder="ч:мм:сс" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base bg-white text-center" />
+            </div>
           </div>
         </div>
 
         <!-- Run -->
-        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-4">
-          <span class="text-2xl">🏃</span>
-          <div class="flex-1 grid grid-cols-2 gap-3">
+        <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+          <div class="flex items-center gap-2"><span class="text-2xl">🏃</span><span class="text-sm font-medium text-gray-700">Бег</span></div>
+          <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="block text-xs text-gray-400 mb-1">Дистанция, км</label>
               <input type="number" id="run-dist" value="42.2" step="0.01" min="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base bg-white text-center" />
@@ -74,6 +82,10 @@ import Footer from '../../components/Footer.astro';
             <div>
               <label class="block text-xs text-gray-400 mb-1">Темп /км</label>
               <input type="text" id="run-pace" value="5:00" placeholder="мм:сс" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base bg-white text-center" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">Время</label>
+              <input type="text" id="run-time" value="" placeholder="ч:мм:сс" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base bg-white text-center" />
             </div>
           </div>
         </div>
@@ -116,13 +128,16 @@ import Footer from '../../components/Footer.astro';
   </main>
 
   <script>
-    const presets: Record<string, { swim: number; bike: number; run: number }> = {
+    const presets = {
       'Ironman': { swim: 3.86, bike: 180.25, run: 42.2 },
       'Half': { swim: 1.9, bike: 90, run: 21.1 },
       'Olympic': { swim: 1.5, bike: 40, run: 10 },
       'Sprint': { swim: 0.75, bike: 20, run: 5 },
       'Super': { swim: 0.4, bike: 10, run: 2.5 },
     };
+
+    // Track which was last edited: 'pace' | 'time'
+    const lastEdited: Record<string, string> = { swim: 'pace', bike: 'speed', run: 'pace' };
 
     function parseTime(str: string): number {
       const parts = str.split(':').map(Number);
@@ -140,44 +155,94 @@ import Footer from '../../components/Footer.astro';
       return `${m}:${String(s).padStart(2, '0')}`;
     }
 
-    function calc() {
-      const swimDist = parseFloat((document.getElementById('swim-dist') as HTMLInputElement).value) || 0;
-      const swimPace = parseTime((document.getElementById('swim-pace') as HTMLInputElement).value);
-      const bikeDist = parseFloat((document.getElementById('bike-dist') as HTMLInputElement).value) || 0;
-      const bikeSpeed = parseFloat((document.getElementById('bike-speed') as HTMLInputElement).value) || 0;
-      const runDist = parseFloat((document.getElementById('run-dist') as HTMLInputElement).value) || 0;
-      const runPace = parseTime((document.getElementById('run-pace') as HTMLInputElement).value);
-      const t1 = parseTime((document.getElementById('t1') as HTMLInputElement).value);
-      const t2 = parseTime((document.getElementById('t2') as HTMLInputElement).value);
-
-      const swimTime = swimDist > 0 && swimPace > 0 ? (swimDist * 1000 / 100) * swimPace : 0;
-      const bikeTime = bikeDist > 0 && bikeSpeed > 0 ? (bikeDist / bikeSpeed) * 3600 : 0;
-      const runTime = runDist > 0 && runPace > 0 ? runDist * runPace : 0;
-
-      (document.getElementById('res-swim')!).textContent = formatTime(swimTime);
-      (document.getElementById('res-bike')!).textContent = formatTime(bikeTime + t1);
-      (document.getElementById('res-run')!).textContent = formatTime(runTime + t2);
-      (document.getElementById('res-total')!).textContent = formatTime(swimTime + bikeTime + runTime + t1 + t2);
+    function formatPace(secTotal: number, perUnit: number): string {
+      if (secTotal <= 0 || perUnit <= 0 || isNaN(secTotal) || isNaN(perUnit)) return '';
+      const paceSec = secTotal / perUnit;
+      const m = Math.floor(paceSec / 60);
+      const s = Math.floor(paceSec % 60);
+      return `${m}:${String(s).padStart(2, '0')}`;
     }
 
+    function get(id: string): HTMLInputElement { return document.getElementById(id) as HTMLInputElement; }
+
+    function calc() {
+      // Swim
+      const sDist = parseFloat(get('swim-dist').value) || 0;
+      let sPace = parseTime(get('swim-pace').value);
+      let sTime = parseTime(get('swim-time').value);
+
+      if (lastEdited.swim === 'time' && sTime > 0 && sDist > 0) {
+        sPace = (sTime / (sDist * 10));
+        get('swim-pace').value = formatPace(sTime, sDist * 10);
+      } else if (sDist > 0 && sPace > 0) {
+        sTime = sDist * 10 * sPace;
+        get('swim-time').value = formatTime(sTime);
+      }
+
+      // Bike
+      const bDist = parseFloat(get('bike-dist').value) || 0;
+      let bSpeed = parseFloat(get('bike-speed').value) || 0;
+      let bTime = parseTime(get('bike-time').value);
+
+      if (lastEdited.bike === 'time' && bTime > 0 && bDist > 0) {
+        bSpeed = (bDist / bTime) * 3600;
+        get('bike-speed').value = bSpeed.toFixed(1);
+      } else if (bDist > 0 && bSpeed > 0) {
+        bTime = (bDist / bSpeed) * 3600;
+        get('bike-time').value = formatTime(bTime);
+      }
+
+      // Run
+      const rDist = parseFloat(get('run-dist').value) || 0;
+      let rPace = parseTime(get('run-pace').value);
+      let rTime = parseTime(get('run-time').value);
+
+      if (lastEdited.run === 'time' && rTime > 0 && rDist > 0) {
+        rPace = rTime / rDist;
+        get('run-pace').value = formatPace(rTime, rDist);
+      } else if (rDist > 0 && rPace > 0) {
+        rTime = rDist * rPace;
+        get('run-time').value = formatTime(rTime);
+      }
+
+      // Transitions
+      const t1 = parseTime(get('t1').value);
+      const t2 = parseTime(get('t2').value);
+
+      get('res-swim').textContent = formatTime(sTime);
+      get('res-bike').textContent = formatTime(bTime + t1);
+      get('res-run').textContent = formatTime(rTime + t2);
+      get('res-total').textContent = formatTime(sTime + bTime + rTime + t1 + t2);
+    }
+
+    // Track edits
+    get('swim-pace').addEventListener('input', () => { lastEdited.swim = 'pace'; calc(); });
+    get('swim-time').addEventListener('input', () => { lastEdited.swim = 'time'; calc(); });
+    get('bike-speed').addEventListener('input', () => { lastEdited.bike = 'speed'; calc(); });
+    get('bike-time').addEventListener('input', () => { lastEdited.bike = 'time'; calc(); });
+    get('run-pace').addEventListener('input', () => { lastEdited.run = 'pace'; calc(); });
+    get('run-time').addEventListener('input', () => { lastEdited.run = 'time'; calc(); });
+
+    // Distance changes: respect lastEdited
+    get('swim-dist').addEventListener('input', calc);
+    get('bike-dist').addEventListener('input', calc);
+    get('run-dist').addEventListener('input', calc);
+    get('t1').addEventListener('input', calc);
+    get('t2').addEventListener('input', calc);
+
+    // Preset buttons
     document.querySelectorAll('.distance-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.distance-btn').forEach((b) =>
-          b.classList.remove('bg-blue-50', 'border-blue-300', 'text-blue-700'),
-        );
+        document.querySelectorAll('.distance-btn').forEach((b) => b.classList.remove('bg-blue-50', 'border-blue-300', 'text-blue-700'));
         btn.classList.add('bg-blue-50', 'border-blue-300', 'text-blue-700');
         const preset = presets[(btn as HTMLElement).dataset.distance!];
         if (preset) {
-          (document.getElementById('swim-dist') as HTMLInputElement).value = String(preset.swim);
-          (document.getElementById('bike-dist') as HTMLInputElement).value = String(preset.bike);
-          (document.getElementById('run-dist') as HTMLInputElement).value = String(preset.run);
+          get('swim-dist').value = String(preset.swim);
+          get('bike-dist').value = String(preset.bike);
+          get('run-dist').value = String(preset.run);
         }
         calc();
       });
-    });
-
-    document.querySelectorAll('#tricalc input').forEach((input) => {
-      input.addEventListener('input', calc);
     });
 
     calc();
