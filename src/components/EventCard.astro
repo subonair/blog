@@ -29,6 +29,7 @@ interface Props {
     bike?: number;
     run?: number;
   };
+  distanceLabel: string;
   sourceUrl?: string;
   prices?: PriceCategory[];
 }
@@ -41,6 +42,7 @@ const {
   status,
   audience,
   distances,
+  distanceLabel,
   sourceUrl,
   prices,
 } = Astro.props;
@@ -54,6 +56,17 @@ const sportTypeConfig: Record<string, { icon: string; label: string }> = {
   bike: { icon: '🚴', label: 'Велосипед' },
   duathlon: { icon: '🚴🏃', label: 'Дуатлон' },
   nordic_walking: { icon: '🥾', label: 'Скандинавская ходьба' },
+};
+
+const distanceLabelConfig: Record<string, { icon: string; label: string }> = {
+  суперпринт: { icon: '⚡', label: 'Суперпринт' },
+  спринт: { icon: '💨', label: 'Спринт' },
+  олимпийская: { icon: '🏅', label: 'Олимпийская' },
+  полужелезная: { icon: '🔥', label: 'Полужелезная' },
+  железная: { icon: '🦾', label: 'Железная' },
+  полумарафон: { icon: '🏃', label: 'Полумарафон' },
+  марафон: { icon: '🏟️', label: 'Марафон' },
+  другая: { icon: '', label: '' },
 };
 
 const formattedDate = date.toLocaleDateString('ru-RU', {
@@ -76,6 +89,7 @@ if (distances.bike != null) distanceParts.push(`🚴 ${distances.bike} км`);
 if (distances.run != null) distanceParts.push(`🏃 ${distances.run} км`);
 
 const externalUrl = sourceUrl || 'https://iron-star.com/event/';
+const dlConfig = distanceLabelConfig[distanceLabel];
 ---
 
 <article
@@ -88,12 +102,19 @@ const externalUrl = sourceUrl || 'https://iron-star.com/event/';
     {statusConfig[status]?.label || status}
   </span>
 
-  <!-- Title -->
-  <h2
-    class="text-base font-semibold text-gray-900 group-hover:text-gray-600 transition-colors pr-20"
-  >
-    {title}
-  </h2>
+  <!-- Title + distance label badge -->
+  <div class="flex items-start gap-2 pr-20">
+    <h2 class="text-base font-semibold text-gray-900 group-hover:text-gray-600 transition-colors">
+      {title}
+    </h2>
+    {
+      dlConfig && dlConfig.icon && (
+        <span class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
+          {dlConfig.icon} {dlConfig.label}
+        </span>
+      )
+    }
+  </div>
 
   <!-- Date + City -->
   <div class="mt-1 flex items-center gap-2 text-sm text-gray-500">
@@ -106,9 +127,7 @@ const externalUrl = sourceUrl || 'https://iron-star.com/event/';
   <div class="mt-0.5 text-xs text-gray-400 flex items-center gap-1">
     <span>{sportTypeConfig[sportType]?.icon}</span>
     <span>{sportTypeConfig[sportType]?.label || sportType}</span>
-    {audience !== 'all' && (
-      <span class="ml-1 text-gray-300">·</span>
-    )}
+    {audience !== 'all' && <span class="ml-1 text-gray-300">·</span>}
     {audience === 'men' && <span class="ml-1">🏃‍♂️ Мужчины</span>}
     {audience === 'women' && <span class="ml-1">🏃‍♀️ Женщины</span>}
     {audience === 'children' && <span class="ml-1">🧒 Дети</span>}

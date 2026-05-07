@@ -41,15 +41,21 @@ const pageSchema = {
       События по триатлону, бегу и плаванию в России и за её пределами.
     </p>
 
-    <div class="mt-6 bg-blue-50 border border-blue-100 rounded-2xl p-5 text-sm text-gray-700 space-y-3">
+    <div
+      class="mt-6 bg-blue-50 border border-blue-100 rounded-2xl p-5 text-sm text-gray-700 space-y-3"
+    >
       <p>
-        ИИ-агенты собирают старты из открытых источников. База постоянно пополняется.
-        Сейчас в базе <strong>2 источника</strong>.
+        ИИ-агенты собирают старты из открытых источников. База постоянно пополняется. Сейчас в базе <strong
+          >2 источника</strong
+        >.
       </p>
       <p>
         Не нашли свой старт?
-        <a href="https://t.me/subonair" class="font-medium text-blue-600 hover:underline" target="_blank">Напишите мне в Telegram</a> —
-        я добавлю его в Календарь стартов.
+        <a
+          href="https://t.me/subonair"
+          class="font-medium text-blue-600 hover:underline"
+          target="_blank">Напишите мне в Telegram</a
+        > — я добавлю его в Календарь стартов.
       </p>
     </div>
 
@@ -67,7 +73,9 @@ const pageSchema = {
                 city={event.data.city}
                 sportType={event.data.sportType}
                 status={event.data.status}
+                audience={event.data.audience}
                 distances={event.data.distances}
+                distanceLabel={event.data.distanceLabel}
                 sourceUrl={event.data.sourceUrl}
                 prices={event.data.prices}
               />
@@ -94,7 +102,9 @@ const pageSchema = {
                   city={event.data.city}
                   sportType={event.data.sportType}
                   status={event.data.status}
+                  audience={event.data.audience}
                   distances={event.data.distances}
+                  distanceLabel={event.data.distanceLabel}
                   sourceUrl={event.data.sourceUrl}
                   prices={event.data.prices}
                 />

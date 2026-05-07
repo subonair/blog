@@ -6,6 +6,7 @@ sportType: run
 status: open
 distances:
     run: 4.2
+distanceLabel: 'другая'
 audience: children
 sourceUrl: "https://reg.greenmarathon.sberbank.ru/"
 price: Бесплатно

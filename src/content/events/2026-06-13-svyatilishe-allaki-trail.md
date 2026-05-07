@@ -6,6 +6,7 @@ sportType: run
 status: open
 distances:
     run: 21
+distanceLabel: 'полумарафон'
 audience: all
 sourceUrl: "https://myrace.info/events/1517"
 prices:

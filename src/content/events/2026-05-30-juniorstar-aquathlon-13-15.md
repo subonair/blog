@@ -7,6 +7,7 @@ status: low
 distances:
     swim: 0.2
     run: 1
+distanceLabel: 'другая'
 audience: children
 sourceUrl: "https://iron-star.com/event/juniorstar-aquathlon-voronezh-2026/"
 ---

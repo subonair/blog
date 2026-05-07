@@ -6,6 +6,7 @@ sportType: run
 status: open
 distances:
     run: 42
+distanceLabel: 'марафон'
 audience: all
 sourceUrl: "https://myrace.info/events/1897"
 prices:

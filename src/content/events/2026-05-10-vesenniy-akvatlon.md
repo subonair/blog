@@ -7,6 +7,7 @@ status: open
 distances:
     swim: 0.5
     run: 3.0
+distanceLabel: 'другая'
 audience: all
 sourceUrl: "https://myrace.info/events/1863"
 prices:

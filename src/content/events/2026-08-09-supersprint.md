@@ -8,6 +8,7 @@ distances:
     swim: 0.25
     bike: 5
     run: 1.5
+distanceLabel: 'суперпринт'
 audience: all
 sourceUrl: "https://iron-star.com/event/liga-triatlona-ironstar-supersprint-top-tri-2026/"
 prices:

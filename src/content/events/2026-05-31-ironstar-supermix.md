@@ -8,6 +8,7 @@ distances:
     swim: 1.5
     bike: 67
     run: 15
+distanceLabel: 'полужелезная'
 audience: all
 sourceUrl: "https://iron-star.com/event/ironstar-supermix-voronezh-2026/"
 prices:

@@ -6,6 +6,7 @@ sportType: swim
 status: open
 distances:
     swim: 1.85
+distanceLabel: 'другая'
 audience: all
 sourceUrl: "https://iron-star.com/event/swimstar-one-mile-sirius-2026/"
 prices:

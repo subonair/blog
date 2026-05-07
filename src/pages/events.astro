@@ -15,8 +15,22 @@ const past = events.filter((e) => e.data.date < now);
 
 // Gather all unique filter values
 const allTypes = [...new Set(events.map((e) => e.data.sportType))].sort();
-const allTitles = [...new Set(events.map((e) => e.data.title))].sort();
 const allAudiences = [...new Set(events.map((e) => e.data.audience))].sort();
+
+// Distance labels: 7 named chips + dropdown for "другая"
+const namedLabels: { value: string; icon: string; label: string }[] = [
+  { value: 'суперпринт', icon: '⚡', label: 'Суперпринт' },
+  { value: 'спринт', icon: '💨', label: 'Спринт' },
+  { value: 'олимпийская', icon: '🏅', label: 'Олимпийская' },
+  { value: 'полужелезная', icon: '🔥', label: 'Полужелезная' },
+  { value: 'железная', icon: '🦾', label: 'Железная' },
+  { value: 'полумарафон', icon: '🏃', label: 'Полумарафон' },
+  { value: 'марафон', icon: '🏟️', label: 'Марафон' },
+];
+// Collect "другая" titles for the dropdown
+const otherTitles = [
+  ...new Set(events.filter((e) => e.data.distanceLabel === 'другая').map((e) => e.data.title)),
+].sort();
 
 // Audience display config
 const audienceConfig: Record<string, { icon: string; label: string }> = {
@@ -56,69 +70,117 @@ const pageSchema = {
 
     <div class="mt-6 bg-blue-50 border border-blue-100 rounded-2xl p-5 text-sm text-gray-700">
       <p>
-        ИИ-агенты собирают старты из открытых источников. База постоянно пополняется. Сейчас в базе 2 источника.
+        ИИ-агенты собирают старты из открытых источников. База постоянно пополняется. Сейчас в базе
+        2 источника.
       </p>
       <p class="mt-2">
         Не нашли свой старт?
-        <a href="https://t.me/subonair" class="font-medium text-blue-600 hover:underline" target="_blank">Напишите мне в Telegram</a> —
-        я добавлю его в Календарь стартов.
+        <a
+          href="https://t.me/subonair"
+          class="font-medium text-blue-600 hover:underline"
+          target="_blank">Напишите мне в Telegram</a
+        > — я добавлю его в Календарь стартов.
       </p>
     </div>
 
     <!-- Filter: Sport type (multiselect chips) -->
     <div class="mt-8" id="filter-sport">
-      <label class="block text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Тип занятия</label>
+      <label class="block text-xs font-medium text-gray-400 uppercase tracking-wide mb-2"
+        >Тип занятия</label
+      >
       <div class="flex flex-wrap gap-2" id="sport-chips">
-        {allTypes.map((type) => (
-          <button
-            class="filter-chip px-3 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer bg-white border-gray-200 text-gray-500"
-            data-filter="type"
-            data-value={type}
-          >
-            {type === 'triathlon' && '🏊🚴🏃 Триатлон'}
-            {type === 'swim' && '🏊 Плавание'}
-            {type === 'run' && '🏃 Бег'}
-            {type === 'bike' && '🚴 Вело'}
-            {type === 'aquathlon' && '🏊🏃 Акватлон'}
-            {type === 'swimrun' && '🏊🏃 Swimrun'}
-            {type === 'duathlon' && '🚴🏃 Дуатлон'}
-            {type === 'nordic_walking' && '🥾 Скандинавская ходьба'}
-          </button>
-        ))}
+        {
+          allTypes.map((type) => (
+            <button
+              class="filter-chip px-3 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer bg-white border-gray-200 text-gray-500"
+              data-filter="type"
+              data-value={type}
+            >
+              {type === 'triathlon' && '🏊🚴🏃 Триатлон'}
+              {type === 'swim' && '🏊 Плавание'}
+              {type === 'run' && '🏃 Бег'}
+              {type === 'bike' && '🚴 Вело'}
+              {type === 'aquathlon' && '🏊🏃 Акватлон'}
+              {type === 'swimrun' && '🏊🏃 Swimrun'}
+              {type === 'duathlon' && '🚴🏃 Дуатлон'}
+              {type === 'nordic_walking' && '🥾 Скандинавская ходьба'}
+            </button>
+          ))
+        }
       </div>
     </div>
 
-    <!-- Filter: Distance label (multiselect chips) -->
+    <!-- Filter: Distance label (7 chips + dropdown) -->
     <div class="mt-4" id="filter-distance">
-      <label class="block text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Дистанция</label>
-      <div class="flex flex-wrap gap-2" id="distance-chips">
-        {allTitles.map((title) => (
-          <button
-            class="filter-chip px-3 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer bg-white border-gray-200 text-gray-500"
-            data-filter="distance"
-            data-value={title}
-          >
-            {title}
-          </button>
-        ))}
+      <label class="block text-xs font-medium text-gray-400 uppercase tracking-wide mb-2"
+        >Дистанция</label
+      >
+      <div class="flex flex-wrap gap-2 items-center">
+        {
+          namedLabels.map((dl) => (
+            <button
+              class="filter-chip px-3 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer bg-white border-gray-200 text-gray-500"
+              data-filter="label"
+              data-value={dl.value}
+            >
+              {dl.icon} {dl.label}
+            </button>
+          ))
+        }
+        <!-- Dropdown for "другая" distances -->
+        {
+          otherTitles.length > 0 && (
+            <div class="relative inline-block">
+              <select
+                id="other-distance-select"
+                class="appearance-none pl-3 pr-8 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer bg-white border-gray-200 text-gray-500 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300"
+                data-filter="title"
+              >
+                <option value="">Другие ↓</option>
+                {otherTitles.map((t) => (
+                  <option value={t}>{t}</option>
+                ))}
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                <svg
+                  class="h-4 w-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </div>
+          )
+        }
       </div>
     </div>
 
     <!-- Filter: Audience (multiselect chips) -->
     <div class="mt-4" id="filter-audience">
-      <label class="block text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Участники</label>
+      <label class="block text-xs font-medium text-gray-400 uppercase tracking-wide mb-2"
+        >Участники</label
+      >
       <div class="flex flex-wrap gap-2" id="audience-chips">
-        {allAudiences
-          .filter((a) => a !== 'all')
-          .map((aud) => (
-            <button
-              class="filter-chip px-3 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer bg-white border-gray-200 text-gray-500"
-              data-filter="audience"
-              data-value={aud}
-            >
-              {audienceConfig[aud]?.icon} {audienceConfig[aud]?.label}
-            </button>
-          ))}
+        {
+          allAudiences
+            .filter((a) => a !== 'all')
+            .map((aud) => (
+              <button
+                class="filter-chip px-3 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer bg-white border-gray-200 text-gray-500"
+                data-filter="audience"
+                data-value={aud}
+              >
+                {audienceConfig[aud]?.icon} {audienceConfig[aud]?.label}
+              </button>
+            ))
+        }
       </div>
     </div>
 
@@ -135,7 +197,8 @@ const pageSchema = {
               <div
                 class="event-item"
                 data-type={event.data.sportType}
-                data-distance={event.data.title}
+                data-label={event.data.distanceLabel}
+                data-title={event.data.title}
                 data-audience={event.data.audience}
               >
                 <EventCard
@@ -146,6 +209,7 @@ const pageSchema = {
                   status={event.data.status}
                   audience={event.data.audience}
                   distances={event.data.distances}
+                  distanceLabel={event.data.distanceLabel}
                   sourceUrl={event.data.sourceUrl}
                   prices={event.data.prices}
                 />
@@ -169,21 +233,23 @@ const pageSchema = {
               {past.map((event) => (
                 <div
                   class="event-item"
-                data-type={event.data.sportType}
-                data-distance={event.data.title}
-                data-audience={event.data.audience}
-              >
-                <EventCard
-                  title={event.data.title}
-                  date={event.data.date}
-                  city={event.data.city}
-                  sportType={event.data.sportType}
-                  status={event.data.status}
-                  audience={event.data.audience}
-                  distances={event.data.distances}
-                  sourceUrl={event.data.sourceUrl}
-                  prices={event.data.prices}
-                />
+                  data-type={event.data.sportType}
+                  data-label={event.data.distanceLabel}
+                  data-title={event.data.title}
+                  data-audience={event.data.audience}
+                >
+                  <EventCard
+                    title={event.data.title}
+                    date={event.data.date}
+                    city={event.data.city}
+                    sportType={event.data.sportType}
+                    status={event.data.status}
+                    audience={event.data.audience}
+                    distances={event.data.distances}
+                    distanceLabel={event.data.distanceLabel}
+                    sourceUrl={event.data.sourceUrl}
+                    prices={event.data.prices}
+                  />
                 </div>
               ))}
             </div>
@@ -204,6 +270,7 @@ const pageSchema = {
 
 <script>
   const chips = document.querySelectorAll('.filter-chip');
+  const otherSelect = document.getElementById('other-distance-select') as HTMLSelectElement | null;
   const eventItems = document.querySelectorAll('.event-item');
 
   const activeStyles = ['bg-blue-50', 'border-blue-200', 'text-blue-700'];
@@ -229,13 +296,13 @@ const pageSchema = {
 
   function setParams(params: Record<string, Set<string>>) {
     const hasTypeOnly =
-      params.type?.size === 1 && !params.distance && !params.audience;
+      params.type?.size === 1 && !params.label && !params.title && !params.audience;
     if (hasTypeOnly) {
       // Clean URL: /events/run/
       const type = [...params.type!][0];
       window.history.replaceState(null, '', `/events/${type}/`);
     } else {
-      // Query params: /events/?type=run&distance=olympic
+      // Query params: /events/?type=run&label=olympic
       const search = new URLSearchParams();
       for (const [key, values] of Object.entries(params)) {
         for (const v of values) {
@@ -258,6 +325,15 @@ const pageSchema = {
         activateChip(chip);
       }
     });
+    // Initialize dropdown from URL params
+    if (otherSelect && params['title']?.size) {
+      const title = [...params['title']][0];
+      otherSelect.value = title;
+      if (!otherSelect.value) {
+        // Value not in options, reset
+        otherSelect.value = '';
+      }
+    }
     updateFilters();
   }
 
@@ -285,31 +361,43 @@ const pageSchema = {
         filters[filterType].add(value);
       }
     });
+    // Add dropdown selection
+    if (otherSelect && otherSelect.value) {
+      if (!filters['title']) filters['title'] = new Set();
+      filters['title'].add(otherSelect.value);
+    }
     return filters;
   }
 
   function updateFilters() {
     const active = getActiveFilters();
     const hasType = active.type?.size > 0;
-    const hasDistance = active.distance?.size > 0;
+    const hasLabel = active.label?.size > 0;
+    const hasTitle = active.title?.size > 0;
     const hasAudience = active.audience?.size > 0;
-    const hasAnyFilter = hasType || hasDistance || hasAudience;
+    const hasAnyFilter = hasType || hasLabel || hasTitle || hasAudience;
 
     let upcomingVisible = 0;
     let pastVisible = 0;
 
     eventItems.forEach((el) => {
       const type = (el as HTMLElement).dataset.type!;
-      const distance = (el as HTMLElement).dataset.distance!;
+      const label = (el as HTMLElement).dataset.label!;
+      const title = (el as HTMLElement).dataset.title!;
       const audience = (el as HTMLElement).dataset.audience!;
 
       // Show if ALL active filters match (AND between groups, OR within group)
       const typeMatch = !hasType || active.type!.has(type);
-      const distanceMatch = !hasDistance || active.distance!.has(distance);
+      // Label match: chip label OR if label is "другая" and a title filter is active, check title match
+      const labelMatch = !hasLabel || active.label!.has(label) || (label === 'другая' && hasTitle);
+      const titleMatch = !hasTitle || (label === 'другая' && active.title!.has(title));
       // Audience: "all" events should show for any audience filter
       const audienceMatch = !hasAudience || active.audience!.has(audience) || audience === 'all';
 
-      if ((hasAnyFilter && typeMatch && distanceMatch && audienceMatch) || !hasAnyFilter) {
+      if (
+        (hasAnyFilter && typeMatch && labelMatch && titleMatch && audienceMatch) ||
+        !hasAnyFilter
+      ) {
         (el as HTMLElement).style.display = '';
         const section = el.closest('#upcoming-list, #past-list');
         if (section?.id === 'upcoming-list') upcomingVisible++;
@@ -344,6 +432,11 @@ const pageSchema = {
       }
       updateFilters();
     });
+  });
+
+  // Dropdown change
+  otherSelect?.addEventListener('change', () => {
+    updateFilters();
   });
 
   // Initialize from URL on page load

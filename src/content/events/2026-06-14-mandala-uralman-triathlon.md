@@ -8,6 +8,7 @@ distances:
     swim: 1.5
     bike: 30
     run: 10
+distanceLabel: 'другая'
 audience: all
 sourceUrl: "https://myrace.info/events/1516"
 prices:

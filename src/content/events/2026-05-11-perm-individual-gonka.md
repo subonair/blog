@@ -6,6 +6,7 @@ sportType: bike
 status: open
 distances:
     bike: 10
+distanceLabel: 'другая'
 audience: all
 sourceUrl: "https://myrace.info/events/1901"
 prices:

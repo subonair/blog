@@ -6,6 +6,7 @@ sportType: nordic_walking
 status: open
 distances:
     run: 1
+distanceLabel: 'другая'
 audience: all
 sourceUrl: "https://reg.greenmarathon.sberbank.ru/"
 price: Бесплатно

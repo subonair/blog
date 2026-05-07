@@ -6,6 +6,7 @@ sportType: bike
 status: open
 distances:
     bike: 15
+distanceLabel: 'другая'
 audience: all
 sourceUrl: "https://myrace.info/events/1641"
 prices:
@@ -45,15 +46,19 @@ prices:
 ## Стоимость участия
 
 **Взрослые категории (Спорт/Новички/Ветераны):**
+
 - 2 500 ₽
 
 **Юноши/девушки 10-17 лет:**
+
 - 1 000 ₽
 
 **Дети 7-9 лет:**
+
 - 1 000 ₽
 
 **Беговел:**
+
 - 600 ₽
 
 [Регистрация на myrace.info →](https://myrace.info/events/1641)

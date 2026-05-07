@@ -6,6 +6,7 @@ sportType: run
 status: sold_out
 distances:
     run: 42
+distanceLabel: 'марафон'
 audience: all
 sourceUrl: "https://myrace.info/events/1726"
 prices:
