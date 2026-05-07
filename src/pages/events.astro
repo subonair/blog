@@ -218,7 +218,7 @@ const pageSchema = {
       params[key].add(value);
     }
     // Also check path: /events/run → type=run
-    const pathMatch = window.location.pathname.match(/^\/events\/([a-z]+)\/?$/);
+    const pathMatch = window.location.pathname.match(/^\/events\/([a-z_]+)\/?$/);
     if (pathMatch) {
       const sport = pathMatch[1];
       if (!params['type']) params['type'] = new Set();
