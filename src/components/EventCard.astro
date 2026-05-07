@@ -88,7 +88,19 @@ if (distances.swim != null) distanceParts.push(`🏊 ${distances.swim} км`);
 if (distances.bike != null) distanceParts.push(`🚴 ${distances.bike} км`);
 if (distances.run != null) distanceParts.push(`🏃 ${distances.run} км`);
 
-const externalUrl = sourceUrl || 'https://iron-star.com/event/';
+const externalUrl = sourceUrl || null;
+
+// Extract hostname from URL for display label
+function getSourceLabel(url: string): string {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    return `На сайт ${host}`;
+  } catch {
+    return 'На сайт организатора';
+  }
+}
+const sourceLabel = sourceUrl ? getSourceLabel(sourceUrl) : 'На сайт организатора';
+
 const dlConfig = distanceLabelConfig[distanceLabel];
 ---
 
@@ -163,15 +175,19 @@ const dlConfig = distanceLabelConfig[distanceLabel];
   }
 
   <!-- CTA button -->
-  <div class="mt-3">
-    <a
-      href={externalUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-    >
-      На сайт IronStar
-      <span class="text-xs" aria-hidden="true">→</span>
-    </a>
-  </div>
+  {
+    externalUrl && (
+      <div class="mt-3">
+        <a
+          href={externalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          {sourceLabel}
+          <span class="text-xs" aria-hidden="true">→</span>
+        </a>
+      </div>
+    )
+  }
 </article>
