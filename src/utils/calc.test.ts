@@ -56,6 +56,19 @@ describe('parseTime', () => {
   // Numeric NaN parts
   it('returns 0 for ":" (empty parts)', () => expect(parseTime(':')).toBe(0));
   it('returns 0 for "a:bb" (non-numeric)', () => expect(isNaN(parseTime('a:bb'))).toBe(true));
+
+  // Boundary: raw "99" is bare seconds (< 100)
+  it('parses "99" as 99 bare seconds', () => expect(parseTime('99')).toBe(99));
+  it('parses "100" as 60 seconds (1:00)', () => expect(parseTime('100')).toBe(60));
+
+  // Dot with zero minutes: "0.30" → 30 seconds
+  it('parses "0.30" as 30 seconds (0 min 30 sec)', () => expect(parseTime('0.30')).toBe(30));
+
+  // Comma with zero minutes: "0,05" → 5 seconds
+  it('parses "0,05" as 5 seconds', () => expect(parseTime('0,05')).toBe(5));
+
+  // Leading/trailing whitespace in formatted input
+  it('parses " 1:30 " (with spaces) as 90 seconds', () => expect(parseTime(' 1:30 ')).toBe(90));
 });
 
 // ---------------------------------------------------------------------------
@@ -116,4 +129,10 @@ describe('paceStr', () => {
 
   // Decimal units
   it('handles decimal units (7.5)', () => expect(paceStr(450, 7.5)).toBe('01:00'));
+
+  // Very high pace: > 60 min/unit
+  it('4200s / 1 unit → 70:00', () => expect(paceStr(4200, 1)).toBe('70:00'));
+
+  // Very small pace: sub-minute per unit
+  it('15s / 1 unit → 00:15', () => expect(paceStr(15, 1)).toBe('00:15'));
 });
