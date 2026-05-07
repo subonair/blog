@@ -11,7 +11,8 @@ const staticPages = [
   { url: '/it/', priority: '0.8', changefreq: 'weekly', lastmod: TODAY },
   { url: '/ai/', priority: '0.8', changefreq: 'weekly', lastmod: TODAY },
   { url: '/triatlon/', priority: '0.8', changefreq: 'weekly', lastmod: TODAY },
-  { url: '/services/', priority: '0.8', changefreq: 'monthly', lastmod: TODAY },
+  { url: '/events/', priority: '0.8', changefreq: 'weekly', lastmod: TODAY },
+  { url: '/triatlon/calc/', priority: '0.7', changefreq: 'monthly', lastmod: TODAY },
 ];
 
 export const GET: APIRoute = async () => {

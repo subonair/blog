@@ -1,6 +1,7 @@
 ---
 created: 2026-05-01
-status: черновик
+status: published
+published_url: https://t.me/itrokit/48
 publish_to:
   - telegram
 tags:

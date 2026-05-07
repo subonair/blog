@@ -42,7 +42,6 @@ src/content/blog/{category}/{slug}.md
 - `ai` — ИИ и технологии
 - `it` — IT и карьера
 - `triatlon` — Триатлон и спорт
-- `services` — Сервисы и инструменты
 
 ---
 
@@ -63,7 +62,7 @@ image: /images/post-cover.webp
 | `title`       | string | ✅           | Заголовок поста                                  |
 | `description` | string | ✅           | SEO description (160 символов)                   |
 | `date`        | date   | ✅           | Дата публикации (YYYY-MM-DD)                     |
-| `category`    | enum   | ✅           | `ai`, `it`, `triatlon`, `services`               |
+| `category`    | enum   | ✅           | `ai`, `it`, `triatlon`                           |
 | `image`       | string | ❌           | Обложка поста. Дефолт: `/images/placeholder.jpg` |
 
 ---

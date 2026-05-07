@@ -6,18 +6,17 @@ import TelegramCTA from '../components/TelegramCTA.astro';
 
 const person = {
   name: 'Дмитрий Иноземцев',
-  jobTitle: 'Продуктовый менеджер, энтузиаст ИИ и триатлет',
+  jobTitle: 'CEO компании «Флексайтс», энтузиаст ИИ и триатлет',
   url: 'https://dimino.me',
   sameAs: ['https://t.me/itrokit'],
   image: 'https://dimino.me/images/about-photo.webp',
-  description:
-    'Работаю в продукте, слежу за ИИ и финишировал несколько триатлонов. Пишу о том, что сам проверяю.',
+  description: 'CEO компании «Флексайтс», энтузиаст ИИ и триатлет. Пишу о том, что сам проверяю.',
 };
 ---
 
 <Base
   title="Обо мне — блог и контакты"
-  description="Дмитрий Иноземцев — продуктовый менеджер, энтузиаст ИИ и триатлет. Пишу о том, что сам проверяю: нейросети в работе, длинные дистанции и системное мышление."
+  description="Дмитрий Иноземцев — CEO компании «Флексайтс», энтузиаст ИИ и триатлет. Пишу о том, что сам проверяю: нейросети в работе, длинные дистанции и системное мышление."
   ogImage="/images/about-photo.webp"
 >
   <script
@@ -63,6 +62,31 @@ const person = {
         </p>
       </div>
     </div>
+
+    <!-- Services -->
+    <section class="mt-12 border-t border-gray-100 pt-8">
+      <h2 class="text-lg font-semibold text-gray-900">Чем могу быть полезен</h2>
+      <div class="mt-5 grid gap-4 sm:grid-cols-3">
+        <div class="p-5 border border-gray-100 rounded-xl">
+          <h3 class="font-semibold text-gray-900">Консультация по ИИ</h3>
+          <p class="mt-2 text-sm text-gray-500 leading-relaxed">
+            Разберём, где ИИ реально помогает в вашем бизнесе, а где — только шум.
+          </p>
+        </div>
+        <div class="p-5 border border-gray-100 rounded-xl">
+          <h3 class="font-semibold text-gray-900">Аудит процессов</h3>
+          <p class="mt-2 text-sm text-gray-500 leading-relaxed">
+            Посмотрю на ваши рабочие процессы и скажу, что автоматизировать, а что оставить.
+          </p>
+        </div>
+        <div class="p-5 border border-gray-100 rounded-xl">
+          <h3 class="font-semibold text-gray-900">Менторинг</h3>
+          <p class="mt-2 text-sm text-gray-500 leading-relaxed">
+            Помогу разобраться в продуктовой разработке и управлении командой.
+          </p>
+        </div>
+      </div>
+    </section>
 
     <!-- Contacts -->
     <section class="mt-12 border-t border-gray-100 pt-8">
