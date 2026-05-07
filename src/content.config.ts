@@ -7,7 +7,7 @@ const blog = defineCollection({
     title: z.string(),
     description: z.string(),
     date: z.date(),
-    category: z.enum(['ai', 'triatlon', 'it', 'services']),
+    category: z.enum(['ai', 'triatlon', 'it']),
     image: z.string().optional(),
   }),
 });
@@ -25,6 +25,18 @@ const events = defineCollection({
       bike: z.number().optional(),
       run: z.number().optional(),
     }),
+    distanceLabel: z
+      .enum([
+        'суперпринт',
+        'спринт',
+        'олимпийская',
+        'полужелезная',
+        'железная',
+        'марафон',
+        'полумарафон',
+        'другая',
+      ])
+      .default('другая'),
     audience: z.enum(['all', 'men', 'women', 'children']).default('all'),
     sourceUrl: z.string().optional(),
     prices: z

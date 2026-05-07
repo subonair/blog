@@ -66,10 +66,11 @@ export default defineConfig({
   redirects: {
     '/ai/ai-v-biznese-s-chego-nachat': '/ai/',
     '/ai/ai-v-biznese-s-chego-nachat/': '/ai/',
-    '/services/kak-rabotaet-nasha-web-studiya': '/about/',
-    '/services/kak-rabotaet-nasha-web-studiya/': '/about/',
-    '/services': '/about/',
-    '/services/': '/about/',
+    // 2026-05-07: статьи из /services/ перенесены в /it/
+    '/services/kak-rabotaet-nasha-web-studiya': '/it/kak-rabotaet-nasha-web-studiya/',
+    '/services/kak-rabotaet-nasha-web-studiya/': '/it/kak-rabotaet-nasha-web-studiya/',
+    '/services': '/it/',
+    '/services/': '/it/',
   },
   vite: {
     plugins: [tailwindcss()],
