@@ -7,7 +7,21 @@ on:
     branches: [main]
 
 jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install detect-secrets
+
+      - run: detect-secrets scan --baseline .secrets.baseline src/
+
   lint-and-build:
+    needs: secret-scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

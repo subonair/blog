@@ -1,0 +1,43 @@
+#!/bin/bash
+# Pre-commit hook: сканирование секретов через detect-secrets
+# Не даёт закоммитить токены, пароли, ключи API в репозиторий
+
+set -e
+
+echo "🔍 Scanning for secrets..."
+
+# Проверяем, установлен ли detect-secrets
+if ! command -v detect-secrets &>/dev/null; then
+    echo "⚠️  detect-secrets не установлен. Установи: pip install detect-secrets"
+    echo "⏩ Пропускаем проверку..."
+    exit 0
+fi
+
+# Сканируем staged файлы
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -v 'package-lock.json\|\.secrets\.baseline' || true)
+
+if [ -z "$STAGED_FILES" ]; then
+    echo "✅ Нет файлов для проверки"
+    exit 0
+fi
+
+# Создаём временный файл со staged-изменениями
+TEMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TEMP_DIR"' EXIT
+
+echo "$STAGED_FILES" | while read -r file; do
+    mkdir -p "$TEMP_DIR/$(dirname "$file")"
+    git show ":$file" > "$TEMP_DIR/$file" 2>/dev/null || true
+done
+
+# Сканируем
+if detect-secrets scan --baseline .secrets.baseline "$TEMP_DIR" 2>&1 | grep -q '[1-9]'; then
+    echo ""
+    echo "⛔ ОБНАРУЖЕНЫ СЕКРЕТЫ! Коммит заблокирован."
+    echo "   Проверь файлы вручную: detect-secrets scan <файл>"
+    echo "   Если это ложное срабатывание — добавь в .secrets.baseline"
+    exit 1
+fi
+
+echo "✅ Секретов не найдено"
+exit 0
