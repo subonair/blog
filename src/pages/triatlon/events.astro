@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import EventCard from '../../components/EventCard.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 
 const events = (await getCollection('events')).sort(
   (a, b) => a.data.date.valueOf() - b.data.date.valueOf(),
@@ -34,6 +35,13 @@ const pageSchema = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
   <Header />
+  <Breadcrumbs
+    items={[
+      { label: 'Главная', href: '/' },
+      { label: 'Триатлон', href: '/triatlon/' },
+      { label: 'Календарь стартов' },
+    ]}
+  />
 
   <main class="max-w-3xl mx-auto px-4 py-10">
     <h1 class="text-3xl font-bold text-gray-900">Календарь стартов</h1>

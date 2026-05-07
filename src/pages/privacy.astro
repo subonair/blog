@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 ---
 
 <Base
@@ -9,6 +10,9 @@ import Footer from '../components/Footer.astro';
   description="Политика конфиденциальности сайта dimino.me: порядок обработки персональных данных, права субъектов и контактная информация оператора в соответствии с 152-ФЗ."
 >
   <Header />
+  <Breadcrumbs
+    items={[{ label: 'Главная', href: '/' }, { label: 'Политика конфиденциальности' }]}
+  />
 
   <main class="max-w-3xl mx-auto px-4 py-10">
     <h1 class="text-3xl font-bold text-gray-900 mb-2">Политика конфиденциальности</h1>

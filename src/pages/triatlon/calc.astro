@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 ---
 
 <Base
@@ -9,6 +10,13 @@ import Footer from '../../components/Footer.astro';
   description="Калькулятор темпа и финишного времени для триатлона. Рассчитайте свой результат для Ironman, Half-Ironman, Olympic и Sprint."
 >
   <Header />
+  <Breadcrumbs
+    items={[
+      { label: 'Главная', href: '/' },
+      { label: 'Триатлон', href: '/triatlon/' },
+      { label: 'Калькулятор' },
+    ]}
+  />
   <main class="max-w-lg mx-auto px-4 py-8 sm:py-12">
     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Калькулятор триатлона</h1>
     <p class="mt-2 text-sm text-gray-500">

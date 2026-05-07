@@ -68,6 +68,7 @@ const articleSchema = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
   <Header />
+  <slot name="breadcrumbs" />
   <main class="max-w-3xl mx-auto px-4 py-10">
     <slot />
   </main>

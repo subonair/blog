@@ -5,6 +5,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import PostCard from '../components/PostCard.astro';
 import TelegramCTA from '../components/TelegramCTA.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 
 const posts = (await getCollection('blog', ({ data }) => data.category === 'ai')).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
@@ -37,6 +38,7 @@ const pageSchema = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
   <Header />
+  <Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'ИИ' }]} />
 
   <main class="max-w-3xl mx-auto px-4 py-10">
     <h1 class="text-3xl font-bold text-gray-900">ИИ</h1>
