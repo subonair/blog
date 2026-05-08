@@ -25,7 +25,7 @@ const {
 const isNoindex = robots.includes('noindex');
 
 const siteOrigin = Astro.site?.origin ?? 'https://dimino.me';
-const relativeOgImage = ogImage ?? (slug ? `/api/og/${slug}.png?v=2` : '/api/og/default.png?v=2');
+const relativeOgImage = ogImage ?? (slug ? `/api/og/${slug}.png?v=3` : '/api/og/default.png?v=3');
 const resolvedOgImage = relativeOgImage.startsWith('http')
   ? relativeOgImage
   : `${siteOrigin}${relativeOgImage}`;
