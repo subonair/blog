@@ -1,0 +1,786 @@
+<div class="dimi-search" data-dimi-search>
+  <button class="dimi-launcher" type="button" aria-expanded="false" aria-controls="dimi-panel">
+    <span class="dimi-sprite" data-mode="idle" aria-hidden="true">
+      <span class="dimi-shadow"></span>
+      <span class="dimi-wave dimi-wave-a"></span>
+      <span class="dimi-wave dimi-wave-b"></span>
+      <span class="dimi-bike-wheel dimi-bike-wheel-a"></span>
+      <span class="dimi-bike-wheel dimi-bike-wheel-b"></span>
+      <span class="dimi-body"></span>
+      <span class="dimi-face"></span>
+      <span class="dimi-eye dimi-eye-a"></span>
+      <span class="dimi-eye dimi-eye-b"></span>
+      <span class="dimi-cheek dimi-cheek-a"></span>
+      <span class="dimi-cheek dimi-cheek-b"></span>
+      <span class="dimi-mouth"></span>
+      <span class="dimi-arm dimi-arm-a"></span>
+      <span class="dimi-arm dimi-arm-b"></span>
+      <span class="dimi-leg dimi-leg-a"></span>
+      <span class="dimi-leg dimi-leg-b"></span>
+      <span class="dimi-helmet"></span>
+      <span class="dimi-lens"></span>
+    </span>
+    <span class="sr-only">Открыть поиск Dimi</span>
+  </button>
+
+  <section class="dimi-panel" id="dimi-panel" aria-label="Поиск по сайту Dimi" hidden>
+    <div class="dimi-panel-head">
+      <div>
+        <p class="dimi-kicker">Dimi</p>
+        <h2 class="dimi-title">Поиск по сайту</h2>
+      </div>
+      <button class="dimi-close" type="button" aria-label="Закрыть поиск">×</button>
+    </div>
+
+    <p class="dimi-status" data-dimi-status>Бегу по сайту и ищу нужное.</p>
+
+    <label class="dimi-input-wrap">
+      <span class="sr-only">Что найти</span>
+      <input
+        class="dimi-input"
+        type="search"
+        autocomplete="off"
+        placeholder="Что найти?"
+        data-dimi-input
+      />
+    </label>
+
+    <div class="dimi-scope-row" aria-label="Область поиска">
+      <button class="dimi-scope is-active" type="button" data-scope="auto">По разделу</button>
+      <button class="dimi-scope" type="button" data-scope="all">Весь сайт</button>
+    </div>
+
+    <div class="dimi-results" data-dimi-results>
+      <p class="dimi-empty">Напиши пару слов, а я пробегусь по заметкам и стартам.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+  type SearchItem = {
+    type: 'post' | 'event';
+    scope: string;
+    title: string;
+    description: string;
+    category: string;
+    categoryLabel: string;
+    date: string;
+    url: string;
+    text: string;
+  };
+
+  const root = document.querySelector('[data-dimi-search]');
+  const launcher = root?.querySelector<HTMLButtonElement>('.dimi-launcher');
+  const panel = root?.querySelector<HTMLElement>('.dimi-panel');
+  const closeButton = root?.querySelector<HTMLButtonElement>('.dimi-close');
+  const input = root?.querySelector<HTMLInputElement>('[data-dimi-input]');
+  const results = root?.querySelector<HTMLElement>('[data-dimi-results]');
+  const status = root?.querySelector<HTMLElement>('[data-dimi-status]');
+  const sprite = root?.querySelector<HTMLElement>('.dimi-sprite');
+  const scopeButtons = root?.querySelectorAll<HTMLButtonElement>('[data-scope]');
+
+  let index: SearchItem[] = [];
+  let manualScope: 'auto' | 'all' = 'auto';
+
+  const scopeText: Record<string, string> = {
+    ai: 'Ищу по разделу ИИ.',
+    events: 'Еду по календарю стартов.',
+    it: 'Разбираю IT-заметки.',
+    triatlon: 'Плыву, еду и бегу по триатлону.',
+    all: 'Бегу по всему сайту.',
+  };
+
+  function getPageScope() {
+    const path = window.location.pathname;
+    if (path.startsWith('/events') || path.startsWith('/triatlon/events')) return 'events';
+    if (path.startsWith('/ai')) return 'ai';
+    if (path.startsWith('/it')) return 'it';
+    if (path.startsWith('/triatlon')) return 'triatlon';
+    return 'all';
+  }
+
+  function getMascotMode(scope: string, query = '') {
+    if (query.length > 0) return 'search';
+    if (scope === 'events') return 'bike';
+    if (scope === 'triatlon') return 'swim';
+    return 'run';
+  }
+
+  function setMode(mode: string) {
+    sprite?.setAttribute('data-mode', mode);
+  }
+
+  function activeScope() {
+    if (manualScope === 'all') return 'all';
+    return getPageScope();
+  }
+
+  function updateStatus(query = '') {
+    const scope = activeScope();
+    const text = scopeText[scope] ?? scopeText.all;
+    if (!status) return;
+    status.textContent = query ? 'Ищу совпадения и смысл рядом.' : text;
+    setMode(getMascotMode(scope, query));
+  }
+
+  function normalize(value: string) {
+    return value.toLowerCase().replace(/ё/g, 'е').trim();
+  }
+
+  function scoreItem(item: SearchItem, tokens: string[]) {
+    const title = normalize(item.title);
+    const description = normalize(item.description);
+    const text = normalize(item.text);
+
+    return tokens.reduce((score, token) => {
+      if (title.includes(token)) return score + 8;
+      if (description.includes(token)) return score + 4;
+      if (text.includes(token)) return score + 1;
+      return score;
+    }, 0);
+  }
+
+  function formatDate(value: string) {
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(value));
+  }
+
+  function escapeHtml(value: string) {
+    return value.replace(
+      /[&<>"']/g,
+      (char) =>
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;',
+        })[char] ?? char,
+    );
+  }
+
+  function renderEmpty(message: string) {
+    if (!results) return;
+    results.innerHTML = `<p class="dimi-empty">${escapeHtml(message)}</p>`;
+  }
+
+  function renderResults(items: SearchItem[]) {
+    if (!results) return;
+    results.innerHTML = items
+      .slice(0, 7)
+      .map(
+        (item) => `
+          <a class="dimi-result" href="${escapeHtml(item.url)}">
+            <span class="dimi-result-meta">
+              <span>${escapeHtml(item.categoryLabel)}</span>
+              <span>${escapeHtml(formatDate(item.date))}</span>
+            </span>
+            <strong>${escapeHtml(item.title)}</strong>
+            <span>${escapeHtml(item.description)}</span>
+          </a>
+        `,
+      )
+      .join('');
+  }
+
+  function search() {
+    const query = normalize(input?.value ?? '');
+    updateStatus(query);
+
+    if (query.length < 2) {
+      renderEmpty('Напиши пару слов, а я пробегусь по заметкам и стартам.');
+      return;
+    }
+
+    const tokens = query.split(/\s+/).filter((token) => token.length > 1);
+    const scope = activeScope();
+    const scopedIndex =
+      scope === 'all'
+        ? index
+        : index.filter((item) => item.scope === scope || item.category === scope);
+
+    const found = scopedIndex
+      .map((item) => ({ item, score: scoreItem(item, tokens) }))
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(({ item }) => item);
+
+    if (found.length === 0) {
+      setMode('idle');
+      renderEmpty('Пока пусто. Попробуй другое слово или включи поиск по всему сайту.');
+      return;
+    }
+
+    setMode('happy');
+    renderResults(found);
+  }
+
+  async function loadIndex() {
+    if (index.length > 0) return;
+    const response = await fetch('/search-index.json');
+    index = await response.json();
+  }
+
+  async function openPanel() {
+    await loadIndex();
+    panel?.removeAttribute('hidden');
+    launcher?.setAttribute('aria-expanded', 'true');
+    updateStatus(input?.value ?? '');
+    requestAnimationFrame(() => input?.focus());
+  }
+
+  function closePanel() {
+    panel?.setAttribute('hidden', '');
+    launcher?.setAttribute('aria-expanded', 'false');
+    setMode(getMascotMode(getPageScope()));
+  }
+
+  launcher?.addEventListener('click', () => {
+    if (panel?.hasAttribute('hidden')) void openPanel();
+    else closePanel();
+  });
+
+  closeButton?.addEventListener('click', closePanel);
+  input?.addEventListener('input', search);
+
+  scopeButtons?.forEach((button) => {
+    button.addEventListener('click', () => {
+      manualScope = button.dataset.scope === 'all' ? 'all' : 'auto';
+      scopeButtons.forEach((item) => item.classList.toggle('is-active', item === button));
+      search();
+    });
+  });
+
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && panel && !panel.hasAttribute('hidden')) closePanel();
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      void openPanel();
+    }
+  });
+
+  setMode(getMascotMode(getPageScope()));
+  updateStatus();
+</script>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .dimi-search {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 50;
+    font-family: Inter, system-ui, sans-serif;
+  }
+
+  .dimi-launcher {
+    width: 76px;
+    height: 76px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 14px 34px rgb(15 23 42 / 14%);
+    cursor: pointer;
+    transition:
+      transform 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .dimi-launcher:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 42px rgb(15 23 42 / 18%);
+  }
+
+  .dimi-panel {
+    position: absolute;
+    right: 0;
+    bottom: 88px;
+    width: min(380px, calc(100vw - 32px));
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 22px 70px rgb(15 23 42 / 20%);
+  }
+
+  .dimi-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .dimi-kicker {
+    margin: 0 0 2px;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .dimi-title {
+    margin: 0;
+    color: #111827;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 750;
+    letter-spacing: 0;
+  }
+
+  .dimi-close {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background: #f9fafb;
+    color: #4b5563;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .dimi-status {
+    min-height: 20px;
+    margin: 10px 0 14px;
+    color: #4b5563;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .dimi-input-wrap {
+    display: block;
+  }
+
+  .dimi-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 14px;
+    outline: none;
+    color: #111827;
+    font-size: 16px;
+    background: #ffffff;
+  }
+
+  .dimi-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 14%);
+  }
+
+  .dimi-scope-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0 14px;
+  }
+
+  .dimi-scope {
+    height: 34px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #4b5563;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .dimi-scope.is-active {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .dimi-results {
+    max-height: 330px;
+    overflow: auto;
+    display: grid;
+    gap: 8px;
+  }
+
+  :global(.dimi-empty) {
+    margin: 0;
+    padding: 18px 4px 4px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  :global(.dimi-result) {
+    display: grid;
+    gap: 5px;
+    padding: 12px;
+    border: 1px solid #f3f4f6;
+    border-radius: 14px;
+    color: #374151;
+    text-decoration: none;
+    background: #ffffff;
+  }
+
+  :global(.dimi-result:hover) {
+    border-color: #dbeafe;
+    background: #f8fbff;
+  }
+
+  :global(.dimi-result strong) {
+    color: #111827;
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  :global(.dimi-result span) {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  :global(.dimi-result-meta) {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: #6b7280;
+  }
+
+  .dimi-sprite {
+    position: relative;
+    width: 52px;
+    height: 58px;
+    image-rendering: pixelated;
+  }
+
+  .dimi-sprite span {
+    position: absolute;
+    display: block;
+    box-sizing: border-box;
+  }
+
+  .dimi-shadow {
+    left: 8px;
+    bottom: 0;
+    width: 36px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgb(17 24 39 / 12%);
+  }
+
+  .dimi-body {
+    left: 16px;
+    top: 27px;
+    width: 20px;
+    height: 22px;
+    border: 3px solid #2f2520;
+    border-radius: 7px 7px 5px 5px;
+    background: #ffe0ad;
+  }
+
+  .dimi-face {
+    left: 8px;
+    top: 9px;
+    width: 36px;
+    height: 30px;
+    border: 3px solid #2f2520;
+    border-radius: 10px;
+    background: #ffd89c;
+  }
+
+  .dimi-eye {
+    top: 22px;
+    width: 5px;
+    height: 4px;
+    background: #2f2520;
+  }
+
+  .dimi-eye-a {
+    left: 19px;
+  }
+
+  .dimi-eye-b {
+    left: 31px;
+  }
+
+  .dimi-cheek {
+    top: 28px;
+    width: 7px;
+    height: 4px;
+    border-radius: 999px;
+    background: #ff8f7b;
+  }
+
+  .dimi-cheek-a {
+    left: 12px;
+  }
+
+  .dimi-cheek-b {
+    right: 8px;
+  }
+
+  .dimi-mouth {
+    left: 25px;
+    top: 30px;
+    width: 6px;
+    height: 2px;
+    background: #7c2d12;
+  }
+
+  .dimi-arm {
+    top: 31px;
+    width: 8px;
+    height: 15px;
+    border: 3px solid #2f2520;
+    border-top: 0;
+    border-radius: 0 0 6px 6px;
+    background: #ffd89c;
+    transform-origin: top center;
+  }
+
+  .dimi-arm-a {
+    left: 8px;
+  }
+
+  .dimi-arm-b {
+    right: 8px;
+  }
+
+  .dimi-leg {
+    top: 45px;
+    width: 8px;
+    height: 10px;
+    border: 3px solid #2f2520;
+    border-top: 0;
+    border-radius: 0 0 4px 4px;
+    background: #ffd89c;
+    transform-origin: top center;
+  }
+
+  .dimi-leg-a {
+    left: 18px;
+  }
+
+  .dimi-leg-b {
+    right: 18px;
+  }
+
+  .dimi-helmet {
+    left: 7px;
+    top: 5px;
+    width: 38px;
+    height: 15px;
+    border: 3px solid #2f2520;
+    border-bottom: 0;
+    border-radius: 11px 11px 0 0;
+    background: #62c7c8;
+  }
+
+  .dimi-lens {
+    left: 30px;
+    top: 8px;
+    width: 12px;
+    height: 8px;
+    border: 2px solid #2f2520;
+    border-radius: 999px;
+    background: #dbeafe;
+    opacity: 0;
+  }
+
+  .dimi-bike-wheel {
+    bottom: 1px;
+    width: 17px;
+    height: 17px;
+    border: 3px solid #2f2520;
+    border-radius: 999px;
+    background: #ffffff;
+    opacity: 0;
+  }
+
+  .dimi-bike-wheel-a {
+    left: 5px;
+  }
+
+  .dimi-bike-wheel-b {
+    right: 5px;
+  }
+
+  .dimi-wave {
+    left: 5px;
+    height: 6px;
+    border: 2px solid #38bdf8;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 999px;
+    opacity: 0;
+  }
+
+  .dimi-wave-a {
+    bottom: 5px;
+    width: 42px;
+  }
+
+  .dimi-wave-b {
+    bottom: 10px;
+    width: 30px;
+    left: 12px;
+  }
+
+  .dimi-sprite[data-mode='run'],
+  .dimi-sprite[data-mode='search'],
+  .dimi-sprite[data-mode='happy'] {
+    animation: dimi-bob 520ms steps(2) infinite;
+  }
+
+  .dimi-sprite[data-mode='run'] .dimi-arm-a,
+  .dimi-sprite[data-mode='search'] .dimi-arm-a {
+    animation: dimi-arm-left 520ms steps(2) infinite;
+  }
+
+  .dimi-sprite[data-mode='run'] .dimi-arm-b,
+  .dimi-sprite[data-mode='search'] .dimi-arm-b {
+    animation: dimi-arm-right 520ms steps(2) infinite;
+  }
+
+  .dimi-sprite[data-mode='run'] .dimi-leg-a,
+  .dimi-sprite[data-mode='search'] .dimi-leg-a {
+    animation: dimi-leg-left 520ms steps(2) infinite;
+  }
+
+  .dimi-sprite[data-mode='run'] .dimi-leg-b,
+  .dimi-sprite[data-mode='search'] .dimi-leg-b {
+    animation: dimi-leg-right 520ms steps(2) infinite;
+  }
+
+  .dimi-sprite[data-mode='bike'] .dimi-bike-wheel,
+  .dimi-sprite[data-mode='bike'] .dimi-lens {
+    opacity: 1;
+  }
+
+  .dimi-sprite[data-mode='bike'] .dimi-leg {
+    top: 39px;
+    height: 8px;
+  }
+
+  .dimi-sprite[data-mode='bike'] .dimi-shadow {
+    opacity: 0;
+  }
+
+  .dimi-sprite[data-mode='bike'] .dimi-bike-wheel {
+    animation: dimi-spin 620ms linear infinite;
+  }
+
+  .dimi-sprite[data-mode='swim'] .dimi-wave {
+    opacity: 1;
+    animation: dimi-wave 900ms ease-in-out infinite;
+  }
+
+  .dimi-sprite[data-mode='swim'] .dimi-body,
+  .dimi-sprite[data-mode='swim'] .dimi-leg {
+    opacity: 0;
+  }
+
+  .dimi-sprite[data-mode='swim'] .dimi-face {
+    transform: translateY(8px);
+  }
+
+  .dimi-sprite[data-mode='swim'] .dimi-helmet {
+    transform: translateY(8px);
+  }
+
+  .dimi-sprite[data-mode='swim'] .dimi-eye,
+  .dimi-sprite[data-mode='swim'] .dimi-cheek,
+  .dimi-sprite[data-mode='swim'] .dimi-mouth {
+    transform: translateY(8px);
+  }
+
+  .dimi-sprite[data-mode='search'] .dimi-lens {
+    opacity: 1;
+    transform: translate(2px, -1px) scale(1.25);
+  }
+
+  .dimi-sprite[data-mode='happy'] .dimi-mouth {
+    width: 8px;
+    height: 4px;
+    border-radius: 0 0 999px 999px;
+  }
+
+  @keyframes dimi-bob {
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+
+  @keyframes dimi-arm-left {
+    50% {
+      transform: rotate(22deg);
+    }
+  }
+
+  @keyframes dimi-arm-right {
+    50% {
+      transform: rotate(-22deg);
+    }
+  }
+
+  @keyframes dimi-leg-left {
+    50% {
+      transform: rotate(-20deg);
+    }
+  }
+
+  @keyframes dimi-leg-right {
+    50% {
+      transform: rotate(20deg);
+    }
+  }
+
+  @keyframes dimi-spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  @keyframes dimi-wave {
+    50% {
+      transform: translateX(4px);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .dimi-search {
+      right: 12px;
+      bottom: 12px;
+    }
+
+    .dimi-launcher {
+      width: 68px;
+      height: 68px;
+      border-radius: 22px;
+    }
+
+    .dimi-panel {
+      bottom: 80px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dimi-sprite,
+    .dimi-sprite span {
+      animation: none !important;
+    }
+  }
+</style>
